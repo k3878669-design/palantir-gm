@@ -10,14 +10,20 @@
   --text: #e8eaf0;
   --muted: #858b98;
   --accent: #6b8cff;
+  --accent-soft: rgba(107, 140, 255, 0.12);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 85% 10%, rgba(107, 140, 255, 0.09), transparent 28%),
+    radial-gradient(
+      circle at 85% 10%,
+      rgba(107, 140, 255, 0.09),
+      transparent 28%
+    ),
     var(--bg);
+
   color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -26,8 +32,13 @@ button {
   font: inherit;
 }
 
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .app {
-  width: min(900px, 100%);
+  width: min(1000px, 100%);
   min-height: 100vh;
   margin: 0 auto;
   padding: 24px;
@@ -37,6 +48,7 @@ button {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+
   border-bottom: 1px solid var(--line);
   padding-bottom: 18px;
 }
@@ -51,22 +63,28 @@ button {
 
 h1 {
   margin: 5px 0 0;
+
   font-size: clamp(30px, 8vw, 52px);
   letter-spacing: 0.12em;
 }
 
-.welcome {
-  margin: 42px 0 24px;
-}
-
 h2 {
   margin: 7px 0;
-  font-size: 28px;
+  font-size: clamp(26px, 5vw, 36px);
+}
+
+h3 {
+  margin: 6px 0 0;
+  font-size: 24px;
 }
 
 .muted {
   color: var(--muted);
   line-height: 1.5;
+}
+
+.welcome {
+  margin: 42px 0 24px;
 }
 
 .campaign-grid {
@@ -78,15 +96,20 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+
   gap: 7px;
   min-height: 125px;
   padding: 20px;
+
   border: 1px solid var(--line);
   border-radius: 12px;
+
   background: var(--panel);
   color: var(--text);
+
   text-align: left;
   cursor: pointer;
+
   transition: 0.15s ease;
 }
 
@@ -94,6 +117,7 @@ h2 {
 .campaign-card:focus {
   background: var(--panel-hover);
   border-color: var(--accent);
+
   transform: translateY(-2px);
 }
 
@@ -110,16 +134,20 @@ h2 {
 .card-subtitle {
   color: var(--muted);
   font-size: 13px;
+  line-height: 1.4;
 }
 
 .new-campaign {
   width: 100%;
   margin-top: 14px;
   padding: 15px;
+
   border: 1px dashed var(--line);
   border-radius: 10px;
+
   background: transparent;
   color: var(--muted);
+
   cursor: pointer;
 }
 
@@ -128,44 +156,278 @@ h2 {
   border-color: var(--accent);
 }
 
-footer {
-  margin-top: 60px;
-  color: #4f545f;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+.view-header {
+  margin: 34px 0 22px;
 }
 
-.modal {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(0, 0, 0, 0.72);
+.back-button {
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+
+  cursor: pointer;
+}
+
+.back-button:hover {
+  color: var(--text);
+}
+
+.node-heading {
+  margin-top: 26px;
+}
+
+.node-panel,
+.node-detail,
+.error-panel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+
+  background: var(--panel);
+}
+
+.node-panel {
+  overflow: hidden;
+}
+
+.node-panel-header {
+  padding: 22px;
+
+  border-bottom: 1px solid var(--line);
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--accent-soft),
+      transparent
+    );
+}
+
+.node-type {
+  color: var(--accent);
+
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tree-section {
+  padding: 20px;
+}
+
+.section-label {
+  margin: 0 0 12px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tree-item {
+  position: relative;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+  min-height: 46px;
+
+  padding-left:
+    calc(var(--depth) * 24px);
+}
+
+.tree-row::before {
+  content: "";
+
+  width: 14px;
+  height: 1px;
+
+  margin-left: -10px;
+
+  background: var(--line);
+}
+
+.tree-toggle {
+  width: 24px;
+  height: 30px;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--muted);
+
+  cursor: pointer;
+}
+
+.tree-toggle:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  flex: 1;
+  min-width: 0;
+
+  padding: 10px 12px;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  background: transparent;
+  color: var(--text);
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.tree-node:hover {
+  border-color: var(--line);
+  background: var(--panel-hover);
+}
+
+.tree-icon {
+  width: 20px;
+
+  color: var(--accent);
+  text-align: center;
+}
+
+.tree-name {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-type {
+  margin-left: auto;
+
+  color: #5f6571;
+
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.tree-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .hidden {
   display: none;
 }
 
-.modal-box {
-  width: min(500px, 100%);
-  padding: 26px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.5);
+.node-detail {
+  padding: 24px;
 }
 
-.close-button {
-  margin-top: 12px;
-  padding: 12px 18px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--accent);
-  color: white;
-  font-weight: 700;
+.detail-content {
+  padding-bottom: 24px;
+
+  border-bottom: 1px solid var(--line);
+}
+
+.node-content {
+  margin: 0;
+
+  color: #c9ccd4;
+
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.detail-section {
+  padding-top: 24px;
+}
+
+.link-list {
+  display: grid;
+  gap: 8px;
+}
+
+.link-card {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  width: 100%;
+  padding: 13px 14px;
+
+  border: 1px solid var(--line);
+  border-radius: 9px;
+
+  background: transparent;
+  color: var(--text);
+
+  text-align: left;
   cursor: pointer;
+}
+
+.link-card:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
+
+.link-card > span:first-child {
+  width: 22px;
+
+  color: var(--accent);
+
+  text-align: center;
+  font-size: 17px;
+}
+
+.link-card strong,
+.link-card small {
+  display: block;
+}
+
+.link-card small {
+  margin-top: 3px;
+
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.relation-card {
+  background: rgba(107, 140, 255, 0.04);
+}
+
+.error-panel {
+  margin-top: 42px;
+  padding: 24px;
+}
+
+footer {
+  margin-top: 60px;
+
+  color: #4f545f;
+
+  font-size: 11px;
+  letter-spacing: 0.08em;
 }
 
 @media (min-width: 650px) {
