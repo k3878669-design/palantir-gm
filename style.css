@@ -1191,3 +1191,201 @@ footer {
   }
 
 }
+/* =========================================================
+   PALANTIR GM 0.2.5
+   CRIAR NODE
+   ========================================================= */
+
+.node-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.create-node-button {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.create-node-button:hover {
+  background: rgba(107, 140, 255, 0.2);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.create-node-button:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   EDITOR
+   ========================================================= */
+
+.node-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.node-editor {
+  width: min(680px, 100%);
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+.node-editor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  padding: 22px 24px;
+
+  border-bottom: 1px solid var(--line);
+}
+
+.node-editor-header h2 {
+  margin: 4px 0 0;
+}
+
+.node-editor-close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+
+  font-size: 28px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.node-editor-close:hover {
+  color: var(--text);
+}
+
+.node-editor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  padding: 24px;
+}
+
+.node-editor-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-editor-body label > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.node-editor-body input,
+.node-editor-body textarea,
+.node-editor-body select {
+  width: 100%;
+
+  border: 1px solid var(--line);
+  border-radius: 8px;
+
+  background: var(--bg);
+  color: var(--text);
+
+  padding: 11px 12px;
+
+  font: inherit;
+  outline: none;
+}
+
+.node-editor-body textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.node-editor-body input:focus,
+.node-editor-body textarea:focus,
+.node-editor-body select:focus {
+  border-color: var(--accent);
+}
+
+.node-editor-body small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.node-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  padding: 18px 24px;
+
+  border-top: 1px solid var(--line);
+}
+
+.node-editor-cancel,
+.node-editor-save {
+  border-radius: 8px;
+  padding: 10px 14px;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.node-editor-cancel {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+}
+
+.node-editor-cancel:hover {
+  color: var(--text);
+  background: var(--panel-hover);
+}
+
+.node-editor-save {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.node-editor-save:hover {
+  background: rgba(107, 140, 255, 0.2);
+}
