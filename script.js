@@ -3,6 +3,34 @@ const campaignView = document.getElementById("campaignView");
 
 const data = window.PALANTIR_DATA;
 
+const app = document.querySelector(".app");
+const campaignView = document.getElementById("campaignView");
+
+const data = window.PALANTIR_DATA;
+
+const STORAGE_KEY = "palantir-gm-data";
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadData() {
+  const savedData = localStorage.getItem(STORAGE_KEY);
+
+  if (!savedData) {
+    return;
+  }
+
+  try {
+    const parsedData = JSON.parse(savedData);
+
+    if (parsedData && Array.isArray(parsedData.campaigns)) {
+      data.campaigns = parsedData.campaigns;
+    }
+  } catch (error) {
+    console.error("Erro ao carregar memória do Palantir:", error);
+  }
+
 if (!data || !Array.isArray(data.campaigns)) {
   campaignView.innerHTML = `
     <section class="error-panel">
@@ -14,6 +42,7 @@ if (!data || !Array.isArray(data.campaigns)) {
     </section>
   `;
 } else {
+  loadData();
   renderCampaignList();
 }
 
