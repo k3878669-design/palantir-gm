@@ -42,49 +42,25 @@ if (!data || !Array.isArray(data.campaigns)) {
   renderCampaignList();
 }
 
-
-/* =========================================================
-   CAMPANHAS
-   ========================================================= */
-
 function getCampaigns() {
-  return data.campaigns || [];
+  return data.campaigns;
 }
 
-
-/* =========================================================
-   BUSCAR CAMPANHA
-   ========================================================= */
-
-function getCampaign(campaignId) {
+function getCampaignById(id) {
   return getCampaigns().find(
-    (campaign) =>
-      campaign.id === campaignId
+    (campaign) => campaign.id === id
   );
 }
 
-
-/* =========================================================
-   BUSCAR NODE
-   ========================================================= */
-
-function getNode(
-  campaign,
-  nodeId
-) {
-  if (!campaign) {
-    return null;
-  }
-
+function getNode(campaign, nodeId) {
   return campaign.nodes.find(
-    (node) =>
-      node.id === nodeId
+    (node) => node.id === nodeId
   );
 }
 
 
 /* =========================================================
-   BUSCAR CAMINHO DO NODE
+   CAMINHO DO NODE
    ========================================================= */
 
 function getNodePath(
@@ -92,21 +68,19 @@ function getNodePath(
   node
 ) {
   const path = [];
+  let currentNode = node;
 
-  let current = node;
+  while (currentNode) {
+    path.unshift(currentNode);
 
-  while (current) {
-    path.unshift(current);
-
-    if (!current.parentId) {
+    if (!currentNode.parentId) {
       break;
     }
 
-    current =
-      getNode(
-        campaign,
-        current.parentId
-      );
+    currentNode = getNode(
+      campaign,
+      currentNode.parentId
+    );
   }
 
   return path;
@@ -131,13 +105,17 @@ function renderBreadcrumb(
     <nav class="breadcrumb">
       ${path
         .map(
-          (item, index) => `
+          (pathNode, index) => `
             <button
-              class="breadcrumb-item"
-              data-node-id="${item.id}"
+              class="breadcrumb-item ${
+                index === path.length - 1
+                  ? "current"
+                  : ""
+              }"
+              data-node-id="${pathNode.id}"
             >
               ${escapeHtml(
-                item.name
+                pathNode.name
               )}
             </button>
 
@@ -160,247 +138,187 @@ function renderBreadcrumb(
    ========================================================= */
 
 function renderCampaignList() {
-  campaignView.innerHTML = "";
-
   const campaigns =
     getCampaigns();
 
-  if (!campaigns.length) {
-    campaignView.innerHTML = `
-      <section class="empty-state">
+  campaignView.innerHTML = `
+    <section class="campaign-list">
+      <div class="section-heading">
         <p class="eyebrow">
-          PALANTIR
+          UNIVERSOS
         </p>
 
         <h2>
-          Nenhuma campanha encontrada.
+          Campanhas
         </h2>
+      </div>
 
-        <p class="muted">
-          O arquivo de dados ainda está vazio.
+      <div class="campaign-grid">
+        ${
+          campaigns.length
+            ? campaigns
+                .map(
+                  (campaign) => `
+                    <button
+                      class="campaign-card"
+                      data-campaign-id="${campaign.id}"
+                    >
+                      <span class="campaign-icon">
+                        ${getNodeIcon(
+                          "campaign-root"
+                        )}
+                      </span>
+
+                      <span class="campaign-name">
+                        ${escapeHtml(
+                          campaign.name
+                        )}
+                      </span>
+
+                      <span class="campaign-description">
+                        ${escapeHtml(
+                          campaign.description ||
+                            ""
+                        )}
+                      </span>
+                    </button>
+                  `
+                )
+                .join("")
+            : `
+                <div class="empty-state">
+                  Nenhuma campanha encontrada.
+                </div>
+              `
+        }
+      </div>
+    </section>
+  `;
+
+  document
+    .querySelectorAll(
+      ".campaign-card"
+    )
+    .forEach(
+      (button) => {
+        button.addEventListener(
+          "click",
+          () => {
+            const campaign =
+              getCampaignById(
+                button.dataset
+                  .campaignId
+              );
+
+            if (!campaign) {
+              return;
+            }
+
+            renderCampaign(
+              campaign
+            );
+          }
+        );
+      }
+    );
+}
+
+
+/* =========================================================
+   CAMPANHA
+   ========================================================= */
+
+function renderCampaign(
+  campaign
+) {
+  const root =
+    campaign.nodes.find(
+      (node) =>
+        node.id ===
+        campaign.rootNodeId
+    );
+
+  if (!root) {
+    campaignView.innerHTML = `
+      <section class="error-panel">
+        <p class="eyebrow">
+          ERRO DE CAMPANHA
         </p>
+
+        <h2>
+          Nó raiz não encontrado.
+        </h2>
       </section>
     `;
 
     return;
   }
 
-  const section =
-    document.createElement(
-      "section"
-    );
+  campaignView.innerHTML = `
+    <section class="campaign-view">
 
-  section.className =
-    "campaign-list";
+      <div class="campaign-header">
 
-  const title =
-    document.createElement(
-      "div"
-    );
+        <button
+          class="back-button"
+          id="backToCampaigns"
+        >
+          ← CAMPANHAS
+        </button>
 
-  title.className =
-    "section-heading";
+        <div>
+          <p class="eyebrow">
+            UNIVERSO
+          </p>
 
-  title.innerHTML = `
-    <p class="eyebrow">
-      CAMPANHAS
-    </p>
+          <h2>
+            ${escapeHtml(
+              campaign.name
+            )}
+          </h2>
 
-    <h2>
-      Arquivos disponíveis
-    </h2>
+          <p class="campaign-description">
+            ${escapeHtml(
+              campaign.description ||
+                ""
+            )}
+          </p>
+        </div>
+
+      </div>
+
+      <div class="campaign-layout">
+
+        <aside
+          class="tree-panel"
+          id="treePanel"
+        >
+        </aside>
+
+        <section
+          class="node-panel"
+          id="nodePanel"
+        >
+          <div class="empty-node">
+            <p class="eyebrow">
+              PALANTIR
+            </p>
+
+            <h2>
+              Selecione um Node
+            </h2>
+
+            <p>
+              Navegue pela estrutura
+              da campanha.
+            </p>
+          </div>
+        </section>
+
+      </div>
+
+    </section>
   `;
-
-  section.appendChild(
-    title
-  );
-
-  campaigns.forEach(
-    (campaign) => {
-      const button =
-        document.createElement(
-          "button"
-        );
-
-      button.className =
-        "campaign-card";
-
-      button.innerHTML = `
-        <span class="campaign-card-type">
-          CAMPANHA
-        </span>
-
-        <span class="campaign-card-name">
-          ${escapeHtml(
-            campaign.name
-          )}
-        </span>
-      `;
-
-      button.addEventListener(
-        "click",
-        () => {
-          renderCampaign(
-            campaign
-          );
-        }
-      );
-
-      section.appendChild(
-        button
-      );
-    }
-  );
-
-  campaignView.appendChild(
-    section
-  );
-}
-
-
-/* =========================================================
-   RENDERIZAR CAMPANHA
-   ========================================================= */
-
-function renderCampaign(
-  campaign
-) {
-  campaignView.innerHTML = "";
-
-  const wrapper =
-    document.createElement(
-      "section"
-    );
-
-  wrapper.className =
-    "campaign-view";
-
-  const header =
-    document.createElement(
-      "div"
-    );
-
-  header.className =
-    "campaign-header";
-
-  header.innerHTML = `
-    <div>
-      <p class="eyebrow">
-        CAMPANHA
-      </p>
-
-      <h2>
-        ${escapeHtml(
-          campaign.name
-        )}
-      </h2>
-    </div>
-
-    <button
-      class="back-button"
-      id="backToCampaigns"
-    >
-      ← CAMPANHAS
-    </button>
-  `;
-
-  wrapper.appendChild(
-    header
-  );
-
-  const layout =
-    document.createElement(
-      "div"
-    );
-
-  layout.className =
-    "campaign-layout";
-
-  const tree =
-    document.createElement(
-      "aside"
-    );
-
-  tree.className =
-    "tree-panel";
-
-  const treeTitle =
-    document.createElement(
-      "div"
-    );
-
-  treeTitle.className =
-    "tree-title";
-
-  treeTitle.innerHTML = `
-    <p class="eyebrow">
-      ESTRUTURA
-    </p>
-
-    <span>
-      Árvore da campanha
-    </span>
-  `;
-
-  tree.appendChild(
-    treeTitle
-  );
-
-  const treeContent =
-    document.createElement(
-      "div"
-    );
-
-  treeContent.id =
-    "campaignTree";
-
-  tree.appendChild(
-    treeContent
-  );
-
-  const detail =
-    document.createElement(
-      "section"
-    );
-
-  detail.className =
-    "node-detail";
-
-  detail.id =
-    "nodeDetail";
-
-  detail.innerHTML = `
-    <div class="empty-node">
-      <p class="eyebrow">
-        PALANTIR
-      </p>
-
-      <h3>
-        Selecione um Node
-      </h3>
-
-      <p class="muted">
-        Navegue pela árvore para abrir
-        uma entidade da campanha.
-      </p>
-    </div>
-  `;
-
-  layout.appendChild(
-    tree
-  );
-
-  layout.appendChild(
-    detail
-  );
-
-  wrapper.appendChild(
-    layout
-  );
-
-  campaignView.appendChild(
-    wrapper
-  );
 
   document
     .getElementById(
@@ -408,12 +326,14 @@ function renderCampaign(
     )
     .addEventListener(
       "click",
-      renderCampaignList
+      () => {
+        renderCampaignList();
+      }
     );
 
   renderTree(
     campaign,
-    treeContent
+    root
   );
 }
 
@@ -424,75 +344,43 @@ function renderCampaign(
 
 function renderTree(
   campaign,
-  container
+  node,
+  container = null
 ) {
-  container.innerHTML = "";
-
-  const root =
-    campaign.nodes.find(
-      (node) =>
-        !node.parentId
+  const treeContainer =
+    container ||
+    document.getElementById(
+      "treePanel"
     );
 
-  if (!root) {
-    container.innerHTML = `
-      <p class="muted">
-        Nenhum Node raiz encontrado.
-      </p>
-    `;
-
+  if (!treeContainer) {
     return;
   }
 
-  const tree =
+  if (!container) {
+    treeContainer.innerHTML = "";
+  }
+
+  const branch =
     document.createElement(
-      "ul"
+      "div"
     );
 
-  tree.className =
-    "tree-root";
+  branch.className =
+    "tree-branch";
 
-  tree.appendChild(
-    renderTreeNode(
-      campaign,
-      root
-    )
-  );
-
-  container.appendChild(
-    tree
-  );
-}
-
-
-/* =========================================================
-   NODE DA ÁRVORE
-   ========================================================= */
-
-function renderTreeNode(
-  campaign,
-  node
-) {
-  const li =
-    document.createElement(
-      "li"
-    );
-
-  li.className =
-    "tree-node";
-
-  const button =
+  const nodeButton =
     document.createElement(
       "button"
     );
 
-  button.className =
-    "tree-node-button";
+  nodeButton.className =
+    "tree-node";
 
-  button.dataset.nodeId =
+  nodeButton.dataset.nodeId =
     node.id;
 
-  button.innerHTML = `
+  nodeButton.innerHTML = `
     <span class="tree-node-icon">
       ${getNodeIcon(
         node.type
@@ -506,7 +394,7 @@ function renderTreeNode(
     </span>
   `;
 
-  button.addEventListener(
+  nodeButton.addEventListener(
     "click",
     () => {
       openNode(
@@ -516,24 +404,20 @@ function renderTreeNode(
     }
   );
 
-  li.appendChild(
-    button
+  branch.appendChild(
+    nodeButton
   );
 
   const children =
-    Array.isArray(
-      node.children
-    )
-      ? node.children
-      : [];
+    node.children || [];
 
   if (children.length) {
-    const ul =
+    const childrenContainer =
       document.createElement(
-        "ul"
+        "div"
       );
 
-    ul.className =
+    childrenContainer.className =
       "tree-children";
 
     children.forEach(
@@ -545,24 +429,24 @@ function renderTreeNode(
           );
 
         if (child) {
-          ul.appendChild(
-            renderTreeNode(
-              campaign,
-              child
-            )
+          renderTree(
+            campaign,
+            child,
+            childrenContainer
           );
         }
       }
     );
 
-    li.appendChild(
-      ul
+    branch.appendChild(
+      childrenContainer
     );
   }
 
-  return li;
+  treeContainer.appendChild(
+    branch
+  );
 }
-
 
 /* =========================================================
    ABRIR NODE
@@ -572,12 +456,12 @@ function openNode(
   campaign,
   node
 ) {
-  const detail =
+  const nodePanel =
     document.getElementById(
-      "nodeDetail"
+      "nodePanel"
     );
 
-  if (!detail) {
+  if (!nodePanel) {
     return;
   }
 
@@ -587,49 +471,85 @@ function openNode(
       node
     );
 
-  const children =
-    Array.isArray(
-      node.children
-    )
-      ? node.children
-      : [];
-
   const relations =
-    Array.isArray(
-      node.relations
-    )
-      ? node.relations
-      : [];
+    node.relations || [];
 
-  detail.innerHTML = `
-    ${breadcrumb}
+  const relationHtml =
+    relations.length
+      ? relations
+          .map(
+            (relation) => {
+              const target =
+                getNode(
+                  campaign,
+                  relation.targetId
+                );
 
-    <article class="node-card">
+              if (!target) {
+                return "";
+              }
 
-      <div class="node-card-header">
+              return `
+                <button
+                  class="relation-card"
+                  data-node-id="${target.id}"
+                >
+                  <span class="relation-type">
+                    ${escapeHtml(
+                      relation.type ||
+                        "relacionado"
+                    )}
+                  </span>
 
-        <div>
-          <p class="eyebrow">
-            ${escapeHtml(
-              node.type || "NODE"
+                  <span class="relation-name">
+                    ${escapeHtml(
+                      target.name
+                    )}
+                  </span>
+                </button>
+              `;
+            }
+          )
+          .join("")
+      : `
+          <div class="empty-relations">
+            Nenhuma relação registrada.
+          </div>
+        `;
+
+  nodePanel.innerHTML = `
+    <article class="node-detail">
+
+      ${breadcrumb}
+
+      <header class="node-detail-header">
+
+        <div class="node-title-area">
+
+          <span class="node-detail-icon">
+            ${getNodeIcon(
+              node.type
             )}
-          </p>
+          </span>
 
-          <h2>
-            ${escapeHtml(
-              node.name
-            )}
-          </h2>
+          <div>
+            <p class="eyebrow">
+              ${escapeHtml(
+                node.type ||
+                  "NODE"
+              )}
+            </p>
+
+            <h2>
+              ${escapeHtml(
+                node.name
+              )}
+            </h2>
+          </div>
+
         </div>
 
         <div class="node-actions">
-
-          <button
-            class="edit-node-button"
-            id="editNode"
-          >
-            ✎ EDITAR NODE
-          </button>
 
           <button
             class="create-node-button"
@@ -638,189 +558,112 @@ function openNode(
             ＋ CRIAR NODE
           </button>
 
+          <button
+            class="edit-node-button"
+            id="editNode"
+          >
+            ✎ EDITAR NODE
+          </button>
+
         </div>
 
-      </div>
+      </header>
 
-      <div class="node-content">
-        ${
-          node.content
-            ? escapeHtml(
-                node.content
-              ).replace(
-                /\n/g,
-                "<br>"
-              )
-            : `
-              <span class="muted">
-                Este Node ainda não possui conteúdo.
-              </span>
-            `
-        }
-      </div>
+      <section class="node-content">
 
-      ${
-        children.length
-          ? `
-            <section class="node-section">
+        <div class="content-section">
 
-              <p class="eyebrow">
-                FILHOS
-              </p>
+          <p class="section-label">
+            CONTEÚDO
+          </p>
 
-              <div class="node-links">
-                ${children
-                  .map(
-                    (childId) => {
-                      const child =
-                        getNode(
-                          campaign,
-                          childId
-                        );
-
-                      if (!child) {
-                        return "";
-                      }
-
-                      return `
-                        <button
-                          class="node-link"
-                          data-node-id="${child.id}"
-                        >
-                          ${escapeHtml(
-                            child.name
-                          )}
-                        </button>
-                      `;
-                    }
+          <div class="node-text">
+            ${
+              node.content
+                ? escapeHtml(
+                    node.content
+                  ).replace(
+                    /\n/g,
+                    "<br>"
                   )
-                  .join("")}
-              </div>
+                : `
+                    <span class="muted">
+                      Este Node ainda não possui conteúdo.
+                    </span>
+                  `
+            }
+          </div>
 
-            </section>
-          `
-          : ""
-      }
+        </div>
 
-      ${
-        relations.length
-          ? `
-            <section class="node-section">
+        <div class="content-section">
 
-              <p class="eyebrow">
-                RELAÇÕES
-              </p>
+          <p class="section-label">
+            RELAÇÕES
+          </p>
 
-              <div class="relation-list">
+          <div class="relations-list">
+            ${relationHtml}
+          </div>
 
-                ${relations
-                  .map(
-                    (relation) => {
+        </div>
 
-                      const target =
-                        getNode(
-                          campaign,
-                          relation.targetId
-                        );
-
-                      if (!target) {
-                        return "";
-                      }
-
-                      return `
-                        <div class="relation-item">
-
-                          <span class="relation-type">
-                            ${escapeHtml(
-                              relation.type ||
-                              "relacionado-a"
-                            )}
-                          </span>
-
-                          <button
-                            class="node-link relation-link"
-                            data-node-id="${target.id}"
-                          >
-                            ${escapeHtml(
-                              target.name
-                            )}
-                          </button>
-
-                        </div>
-                      `;
-                    }
-                  )
-                  .join("")}
-
-              </div>
-
-            </section>
-          `
-          : ""
-      }
+      </section>
 
     </article>
   `;
 
-  detail
+  document
     .querySelectorAll(
       ".breadcrumb-item"
     )
     .forEach(
       (button) => {
-
         button.addEventListener(
           "click",
           () => {
-
-            const target =
+            const targetNode =
               getNode(
                 campaign,
                 button.dataset
                   .nodeId
               );
 
-            if (target) {
+            if (targetNode) {
               openNode(
                 campaign,
-                target
+                targetNode
               );
             }
-
           }
         );
-
       }
     );
 
-  detail
+  document
     .querySelectorAll(
-      ".node-link"
+      ".relation-card"
     )
     .forEach(
       (button) => {
-
         button.addEventListener(
           "click",
           () => {
-
-            const target =
+            const targetNode =
               getNode(
                 campaign,
                 button.dataset
                   .nodeId
               );
 
-            if (target) {
+            if (targetNode) {
               openNode(
                 campaign,
-                target
+                targetNode
               );
             }
-
           }
         );
-
       }
     );
 
@@ -857,25 +700,32 @@ function openNode(
       }
     );
   }
+
+  document
+    .querySelectorAll(
+      ".tree-node"
+    )
+    .forEach(
+      (button) => {
+        button.classList.toggle(
+          "active",
+          button.dataset
+            .nodeId ===
+            node.id
+        );
+      }
+    );
 }
 
 
 /* =========================================================
-   EDITAR NODE
+   EDITOR DE NODE
    ========================================================= */
 
 function openNodeEditor(
   campaign,
   node
 ) {
-  const overlay =
-    document.createElement(
-      "div"
-    );
-
-  overlay.className =
-    "modal-overlay";
-
   const isRoot =
     !node.parentId;
 
@@ -885,138 +735,146 @@ function openNodeEditor(
       node
     );
 
+  const overlay =
+    document.createElement(
+      "div"
+    );
+
+  overlay.className =
+    "modal-overlay";
+
   overlay.innerHTML = `
-    <div class="modal-panel">
+    <div class="node-editor-modal">
 
       <div class="modal-header">
 
         <div>
           <p class="eyebrow">
-            EDITAR NODE
+            EDITOR
           </p>
 
           <h2>
-            ${escapeHtml(
-              node.name
-            )}
+            Editar Node
           </h2>
         </div>
 
         <button
           class="modal-close"
-          id="cancelEditNode"
+          id="cancelNodeEdit"
         >
           ×
         </button>
 
       </div>
 
-      <div class="editor-field">
+      <div class="editor-fields">
 
-        <label for="editNodeName">
-          Nome
+        <label>
+          <span>
+            Nome
+          </span>
+
+          <input
+            id="editNodeName"
+            type="text"
+            value="${escapeHtml(
+              node.name
+            )}"
+          >
         </label>
 
-        <input
-          id="editNodeName"
-          type="text"
-          value="${escapeHtml(
-            node.name
-          )}"
-        >
+        <label>
+          <span>
+            Tipo
+          </span>
 
-      </div>
-
-      <div class="editor-field">
-
-        <label for="editNodeType">
-          Tipo
+          <input
+            id="editNodeType"
+            type="text"
+            value="${escapeHtml(
+              node.type ||
+                "node"
+            )}"
+          >
         </label>
 
-        <input
-          id="editNodeType"
-          type="text"
-          value="${escapeHtml(
-            node.type || ""
-          )}"
-        >
+        <label>
+          <span>
+            Localização
+          </span>
 
-      </div>
+          <select
+            id="editNodeParent"
+            ${isRoot ? "disabled" : ""}
+          >
 
-      <div class="editor-field">
+            ${
+              isRoot
+                ? `
+                    <option value="">
+                      RAIZ DA CAMPANHA
+                    </option>
+                  `
+                : possibleParents
+                    .map(
+                      (
+                        parent
+                      ) => `
+                        <option
+                          value="${parent.id}"
+                          ${
+                            parent.id ===
+                            node.parentId
+                              ? "selected"
+                              : ""
+                          }
+                        >
+                          ${escapeHtml(
+                            getNodeLocationLabel(
+                              campaign,
+                              parent
+                            )
+                          )}
+                        </option>
+                      `
+                    )
+                    .join("")
+            }
 
-        <label for="editNodeParent">
-          Localização
+          </select>
+
         </label>
 
-        ${
-          isRoot
-            ? `
-              <div class="editor-static">
-                NODE RAIZ
-              </div>
-            `
-            : `
-              <select
-                id="editNodeParent"
-              >
-                ${possibleParents
-                  .map(
-                    (parent) => `
-                      <option
-                        value="${parent.id}"
-                        ${
-                          parent.id ===
-                          node.parentId
-                            ? "selected"
-                            : ""
-                        }
-                      >
-                        ${escapeHtml(
-                          getNodeLocationLabel(
-                            campaign,
-                            parent
-                          )
-                        )}
-                      </option>
-                    `
-                  )
-                  .join("")}
-              </select>
-            `
-        }
+        <label>
+          <span>
+            Conteúdo
+          </span>
 
-      </div>
-
-      <div class="editor-field">
-
-        <label for="editNodeContent">
-          Conteúdo
+          <textarea
+            id="editNodeContent"
+            rows="12"
+          >${escapeHtml(
+            node.content ||
+              ""
+          )}</textarea>
         </label>
-
-        <textarea
-          id="editNodeContent"
-          rows="12"
-        >${escapeHtml(
-          node.content || ""
-        )}</textarea>
 
       </div>
 
       <div class="modal-actions">
 
         <button
-          class="secondary-button"
-          id="cancelEditNodeBottom"
+          class="modal-cancel"
+          id="cancelNodeEditBottom"
         >
           CANCELAR
         </button>
 
         <button
-          class="primary-button"
-          id="saveEditNode"
+          class="modal-save"
+          id="saveNodeEdit"
         >
-          SALVAR ALTERAÇÕES
+          SALVAR
         </button>
 
       </div>
@@ -1028,19 +886,17 @@ function openNodeEditor(
     overlay
   );
 
-  const cancelButtons =
-    [
-      document.getElementById(
-        "cancelEditNode"
-      ),
-      document.getElementById(
-        "cancelEditNodeBottom"
-      )
-    ];
+  const cancelButtons = [
+    document.getElementById(
+      "cancelNodeEdit"
+    ),
+    document.getElementById(
+      "cancelNodeEditBottom"
+    )
+  ];
 
   cancelButtons.forEach(
     (button) => {
-
       if (button) {
         button.addEventListener(
           "click",
@@ -1049,13 +905,12 @@ function openNodeEditor(
           }
         );
       }
-
     }
   );
 
   document
     .getElementById(
-      "saveEditNode"
+      "saveNodeEdit"
     )
     .addEventListener(
       "click",
@@ -1097,6 +952,7 @@ function openNodeEditor(
           alert(
             "O Node precisa ter um nome."
           );
+
           return;
         }
 
@@ -1114,7 +970,8 @@ function openNodeEditor(
 
         if (
           !isRoot &&
-          oldParentId !== newParentId
+          oldParentId !==
+            newParentId
         ) {
           moveNode(
             campaign,
@@ -1139,7 +996,8 @@ function openNodeEditor(
     (event) => {
 
       if (
-        event.target === overlay
+        event.target ===
+        overlay
       ) {
         overlay.remove();
       }
@@ -1147,6 +1005,8 @@ function openNodeEditor(
     }
   );
 }
+
+
 /* =========================================================
    POSSÍVEIS PAIS
    ========================================================= */
@@ -1162,23 +1022,11 @@ function getPossibleParents(
     currentNode
   ) {
     const children =
-      Array.isArray(
-        currentNode.children
-      )
-        ? currentNode.children
-        : [];
+      currentNode.children ||
+      [];
 
     children.forEach(
       (childId) => {
-
-        if (
-          descendants.has(
-            childId
-          )
-        ) {
-          return;
-        }
-
         descendants.add(
           childId
         );
@@ -1194,7 +1042,6 @@ function getPossibleParents(
             child
           );
         }
-
       }
     );
   }
@@ -1203,54 +1050,27 @@ function getPossibleParents(
     node
   );
 
-  return campaign.nodes
-    .filter(
-      (candidate) =>
-        candidate.id !== node.id &&
-        !descendants.has(
+  return campaign.nodes.filter(
+    (candidate) => {
+      if (
+        candidate.id ===
+        node.id
+      ) {
+        return false;
+      }
+
+      if (
+        descendants.has(
           candidate.id
         )
-    )
-    .sort(
-      (a, b) =>
-        getNodeLocationLabel(
-          campaign,
-          a
-        ).localeCompare(
-          getNodeLocationLabel(
-            campaign,
-            b
-          ),
-          "pt-BR"
-        )
-    );
-}
+      ) {
+        return false;
+      }
 
-
-/* =========================================================
-   LOCALIZAÇÃO DO NODE
-   ========================================================= */
-
-function getNodeLocationLabel(
-  campaign,
-  node
-) {
-  const path =
-    getNodePath(
-      campaign,
-      node
-    );
-
-  return path
-    .map(
-      (item) =>
-        item.name
-    )
-    .join(
-      " › "
-    );
-}
-
+      return true;
+    }
+  );
+              }
 
 /* =========================================================
    CRIAR NODE
@@ -1260,6 +1080,11 @@ function openCreateNodeEditor(
   campaign,
   currentParent
 ) {
+  const allNodes =
+    getAllNodesSorted(
+      campaign
+    );
+
   const overlay =
     document.createElement(
       "div"
@@ -1268,23 +1093,18 @@ function openCreateNodeEditor(
   overlay.className =
     "modal-overlay";
 
-  const possibleParents =
-    getAllNodesSorted(
-      campaign
-    );
-
   overlay.innerHTML = `
-    <div class="modal-panel">
+    <div class="node-editor-modal">
 
       <div class="modal-header">
 
         <div>
           <p class="eyebrow">
-            CRIAR NODE
+            NOVO NODE
           </p>
 
           <h2>
-            Novo Node
+            Criar Node
           </h2>
         </div>
 
@@ -1297,99 +1117,96 @@ function openCreateNodeEditor(
 
       </div>
 
-      <div class="editor-field">
+      <div class="editor-fields">
 
-        <label for="createNodeName">
-          Nome
+        <label>
+          <span>
+            Nome
+          </span>
+
+          <input
+            id="createNodeName"
+            type="text"
+            placeholder="Nome do Node"
+          >
         </label>
 
-        <input
-          id="createNodeName"
-          type="text"
-          placeholder="Nome do Node"
-        >
+        <label>
+          <span>
+            Tipo
+          </span>
 
-      </div>
-
-      <div class="editor-field">
-
-        <label for="createNodeType">
-          Tipo
+          <input
+            id="createNodeType"
+            type="text"
+            placeholder="node"
+          >
         </label>
 
-        <input
-          id="createNodeType"
-          type="text"
-          placeholder="node"
-        >
+        <label>
+          <span>
+            Localização
+          </span>
 
-      </div>
+          <select
+            id="createNodeParent"
+          >
 
-      <div class="editor-field">
+            ${allNodes
+              .map(
+                (parent) => `
+                  <option
+                    value="${parent.id}"
+                    ${
+                      parent.id ===
+                      currentParent.id
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    ${escapeHtml(
+                      getNodeLocationLabel(
+                        campaign,
+                        parent
+                      )
+                    )}
+                  </option>
+                `
+              )
+              .join("")}
 
-        <label for="createNodeParent">
-          Localização
+          </select>
+
         </label>
 
-        <select
-          id="createNodeParent"
-        >
+        <label>
+          <span>
+            Conteúdo
+          </span>
 
-          ${possibleParents
-            .map(
-              (parent) => `
-                <option
-                  value="${parent.id}"
-                  ${
-                    parent.id ===
-                    currentParent.id
-                      ? "selected"
-                      : ""
-                  }
-                >
-                  ${escapeHtml(
-                    getNodeLocationLabel(
-                      campaign,
-                      parent
-                    )
-                  )}
-                </option>
-              `
-            )
-            .join("")}
-
-        </select>
-
-      </div>
-
-      <div class="editor-field">
-
-        <label for="createNodeContent">
-          Conteúdo
+          <textarea
+            id="createNodeContent"
+            rows="12"
+            placeholder="Conteúdo do Node..."
+          ></textarea>
         </label>
-
-        <textarea
-          id="createNodeContent"
-          rows="12"
-          placeholder="Conteúdo do Node..."
-        ></textarea>
 
       </div>
 
       <div class="modal-actions">
 
         <button
-          class="secondary-button"
+          class="modal-cancel"
           id="cancelCreateNodeBottom"
         >
           CANCELAR
         </button>
 
         <button
-          class="primary-button"
+          class="modal-save"
           id="saveCreateNode"
         >
-          CRIAR NODE
+          CRIAR
         </button>
 
       </div>
@@ -1401,19 +1218,17 @@ function openCreateNodeEditor(
     overlay
   );
 
-  const cancelButtons =
-    [
-      document.getElementById(
-        "cancelCreateNode"
-      ),
-      document.getElementById(
-        "cancelCreateNodeBottom"
-      )
-    ];
+  const cancelButtons = [
+    document.getElementById(
+      "cancelCreateNode"
+    ),
+    document.getElementById(
+      "cancelCreateNodeBottom"
+    )
+  ];
 
   cancelButtons.forEach(
     (button) => {
-
       if (button) {
         button.addEventListener(
           "click",
@@ -1422,7 +1237,6 @@ function openCreateNodeEditor(
           }
         );
       }
-
     }
   );
 
@@ -1468,8 +1282,36 @@ function openCreateNodeEditor(
           alert(
             "O Node precisa ter um nome."
           );
+
           return;
         }
+
+        if (!parentId) {
+          alert(
+            "O Node precisa ter um local."
+          );
+
+          return;
+        }
+
+        const newNode = {
+          id:
+            generateNodeId(),
+          name:
+            name,
+          type:
+            type || "node",
+          content:
+            content,
+          parentId:
+            parentId,
+          children: [],
+          relations: []
+        };
+
+        campaign.nodes.push(
+          newNode
+        );
 
         const parent =
           getNode(
@@ -1477,61 +1319,23 @@ function openCreateNodeEditor(
             parentId
           );
 
-        if (!parent) {
-          alert(
-            "O Node pai não foi encontrado."
+        if (parent) {
+
+          if (
+            !Array.isArray(
+              parent.children
+            )
+          ) {
+            parent.children =
+              [];
+          }
+
+          parent.children.push(
+            newNode.id
           );
-          return;
         }
-
-        const newNode = {
-          id:
-            generateNodeId(),
-
-          name,
-
-          type:
-            type || "node",
-
-          content,
-
-          parentId,
-
-          children: [],
-
-          relations: []
-        };
-
-
-        /* ===============================================
-           ADICIONA AO UNIVERSO
-           =============================================== */
-
-        campaign.nodes.push(
-          newNode
-        );
-
-
-        /* ===============================================
-           ADICIONA AO PAI
-           =============================================== */
-
-        if (!Array.isArray(
-          parent.children
-        )) {
-          parent.children = [];
-        }
-
-        parent.children.push(
-          newNode.id
-        );
 
         saveData();
-
-
-        /* ===============================================
-           FECHA E ABRE O NODE
-           =============================================== */
 
         overlay.remove();
 
@@ -1539,16 +1343,25 @@ function openCreateNodeEditor(
           campaign,
           newNode
         );
+
+        renderTree(
+          campaign,
+          campaign.nodes.find(
+            (node) =>
+              node.id ===
+              campaign.rootNodeId
+          )
+        );
       }
     );
-
 
   overlay.addEventListener(
     "click",
     (event) => {
 
       if (
-        event.target === overlay
+        event.target ===
+        overlay
       ) {
         overlay.remove();
       }
@@ -1559,7 +1372,26 @@ function openCreateNodeEditor(
 
 
 /* =========================================================
-   CRIA ID ÚNICO
+   ORDENAR NODES
+   ========================================================= */
+
+function getAllNodesSorted(
+  campaign
+) {
+  return [
+    ...campaign.nodes
+  ].sort(
+    (a, b) =>
+      a.name.localeCompare(
+        b.name,
+        "pt-BR"
+      )
+  );
+}
+
+
+/* =========================================================
+   GERAR ID
    ========================================================= */
 
 function generateNodeId() {
@@ -1575,25 +1407,25 @@ function generateNodeId() {
 
 
 /* =========================================================
-   TODOS OS NODES
+   LOCALIZAÇÃO DO NODE
    ========================================================= */
 
-function getAllNodesSorted(
-  campaign
+function getNodeLocationLabel(
+  campaign,
+  node
 ) {
-  return [...campaign.nodes]
-    .sort((a, b) =>
-      getNodeLocationLabel(
-        campaign,
-        a
-      ).localeCompare(
-        getNodeLocationLabel(
-          campaign,
-          b
-        ),
-        "pt-BR"
-      )
+  const path =
+    getNodePath(
+      campaign,
+      node
     );
+
+  return path
+    .map(
+      (pathNode) =>
+        pathNode.name
+    )
+    .join(" › ");
 }
 
 
@@ -1617,50 +1449,73 @@ function moveNode(
   }
 
   const oldParent =
-    getNode(
-      campaign,
-      oldParentId
-    );
+    oldParentId
+      ? getNode(
+          campaign,
+          oldParentId
+        )
+      : null;
 
   const newParent =
-    getNode(
-      campaign,
-      newParentId
-    );
+    newParentId
+      ? getNode(
+          campaign,
+          newParentId
+        )
+      : null;
 
-  if (!newParent) {
+  if (
+    newParentId &&
+    !newParent
+  ) {
     return;
   }
 
   if (oldParent) {
 
+    if (
+      !Array.isArray(
+        oldParent.children
+      )
+    ) {
+      oldParent.children =
+        [];
+    }
+
     oldParent.children =
-      (oldParent.children || [])
-        .filter(
-          (childId) =>
-            childId !== node.id
-        );
-
+      oldParent.children.filter(
+        (childId) =>
+          childId !==
+          node.id
+      );
   }
 
-  if (!Array.isArray(
-    newParent.children
-  )) {
-    newParent.children = [];
-  }
+  if (newParent) {
 
-  if (
-    !newParent.children.includes(
-      node.id
-    )
-  ) {
-    newParent.children.push(
-      node.id
-    );
+    if (
+      !Array.isArray(
+        newParent.children
+      )
+    ) {
+      newParent.children =
+        [];
+    }
+
+    if (
+      !newParent.children.includes(
+        node.id
+      )
+    ) {
+      newParent.children.push(
+        node.id
+      );
+    }
   }
 
   node.parentId =
-    newParent.id;
+    newParentId;
+
+  saveData();
 }
 
 
@@ -1672,22 +1527,23 @@ function getNodeIcon(
   type
 ) {
   const icons = {
+    "campaign-root": "◈",
     campaign: "◈",
-    faction: "◆",
-    player: "●",
-    npc: "○",
-    leadership: "▲",
+    faction: "⬢",
+    organization: "⬢",
+    player: "♙",
+    npc: "♟",
+    leadership: "♛",
     sheet: "▣",
     biography: "▤",
-    event: "◉",
+    event: "✦",
     threat: "☠",
     location: "⌖",
     mission: "⚑",
+    weapon: "⚔",
     item: "◇",
-    weapon: "╋",
-    creature: "♢",
-    rule: "≡",
-    node: "•"
+    character: "♙",
+    node: "◆"
   };
 
   return (
