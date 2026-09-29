@@ -25,6 +25,7 @@ function loadData() {
   } catch (error) {
     console.error("Erro ao carregar memória do Palantir:", error);
   }
+}
 
 if (!data || !Array.isArray(data.campaigns)) {
   campaignView.innerHTML = `
@@ -41,40 +42,57 @@ if (!data || !Array.isArray(data.campaigns)) {
   renderCampaignList();
 }
 
+
+/* =========================================================
+   CAMPANHAS
+   ========================================================= */
+
 function getCampaigns() {
-  return data.campaigns;
-}
-
-function getCampaignById(id) {
-  return getCampaigns().find((campaign) => campaign.id === id);
-}
-
-function getNode(campaign, nodeId) {
-  return campaign.nodes.find((node) => node.id === nodeId);
-}
-
-function getNodeChildren(campaign, node) {
-  return (node.children || [])
-    .map((childId) => getNode(campaign, childId))
-    .filter(Boolean);
-}
-
-function getNodeRelations(campaign, node) {
-  return (node.relations || [])
-    .map((relation) => ({
-      ...relation,
-      node: getNode(campaign, relation.targetId)
-    }))
-    .filter((relation) => relation.node);
+  return data.campaigns || [];
 }
 
 
 /* =========================================================
-   CAMINHO / BREADCRUMB
+   BUSCAR CAMPANHA
    ========================================================= */
 
-function getNodePath(campaign, node) {
+function getCampaign(campaignId) {
+  return getCampaigns().find(
+    (campaign) =>
+      campaign.id === campaignId
+  );
+}
+
+
+/* =========================================================
+   BUSCAR NODE
+   ========================================================= */
+
+function getNode(
+  campaign,
+  nodeId
+) {
+  if (!campaign) {
+    return null;
+  }
+
+  return campaign.nodes.find(
+    (node) =>
+      node.id === nodeId
+  );
+}
+
+
+/* =========================================================
+   BUSCAR CAMINHO DO NODE
+   ========================================================= */
+
+function getNodePath(
+  campaign,
+  node
+) {
   const path = [];
+
   let current = node;
 
   while (current) {
@@ -84,194 +102,319 @@ function getNodePath(campaign, node) {
       break;
     }
 
-    current = getNode(campaign, current.parentId);
+    current =
+      getNode(
+        campaign,
+        current.parentId
+      );
   }
 
   return path;
 }
 
-function renderBreadcrumb(campaign, node) {
-  const path = getNodePath(campaign, node);
+
+/* =========================================================
+   BREADCRUMB
+   ========================================================= */
+
+function renderBreadcrumb(
+  campaign,
+  node
+) {
+  const path =
+    getNodePath(
+      campaign,
+      node
+    );
 
   return `
-    <nav
-      class="breadcrumb"
-      aria-label="Localização"
-    >
-      ${path.map((item, index) => `
-        <button
-          class="breadcrumb-item"
-          data-breadcrumb-id="${item.id}"
-        >
-          ${escapeHtml(item.name)}
-        </button>
+    <nav class="breadcrumb">
+      ${path
+        .map(
+          (item, index) => `
+            <button
+              class="breadcrumb-item"
+              data-node-id="${item.id}"
+            >
+              ${escapeHtml(
+                item.name
+              )}
+            </button>
 
-        ${
-          index < path.length - 1
-            ? `<span class="breadcrumb-separator">›</span>`
-            : ""
-        }
-      `).join("")}
+            ${
+              index <
+              path.length - 1
+                ? `<span class="breadcrumb-separator">›</span>`
+                : ""
+            }
+          `
+        )
+        .join("")}
     </nav>
   `;
 }
 
 
 /* =========================================================
-   CAMPANHAS
+   LISTA DE CAMPANHAS
    ========================================================= */
 
 function renderCampaignList() {
-  campaignView.innerHTML = `
-    <section class="welcome">
-      <p class="eyebrow">SISTEMA ONLINE</p>
-      <h2>Campanhas</h2>
+  campaignView.innerHTML = "";
 
-      <p class="muted">
-        Selecione um universo para entrar no Palantir.
-      </p>
-    </section>
+  const campaigns =
+    getCampaigns();
 
-    <section class="campaign-grid">
-      ${getCampaigns().map((campaign) => `
-        <button
-          class="campaign-card"
-          data-campaign-id="${campaign.id}"
-        >
-          <span class="icon">◉</span>
-
-          <span class="card-title">
-            ${escapeHtml(campaign.name)}
-          </span>
-
-          <span class="card-subtitle">
-            ${escapeHtml(
-              campaign.description || "Campanha"
-            )}
-          </span>
-        </button>
-      `).join("")}
-    </section>
-
-    <button
-      class="new-campaign"
-      id="newCampaign"
-    >
-      + NOVA CAMPANHA
-    </button>
-  `;
-
-  document
-    .querySelectorAll("[data-campaign-id]")
-    .forEach((button) => {
-      button.addEventListener("click", () => {
-        renderCampaign(button.dataset.campaignId);
-      });
-    });
-
-  document
-    .getElementById("newCampaign")
-    .addEventListener("click", () => {
-      alert(
-        "Criador de campanhas: EM CONSTRUÇÃO."
-      );
-    });
-}
-
-
-function renderCampaign(campaignId) {
-  const campaign = getCampaignById(campaignId);
-
-  if (!campaign) {
-    renderCampaignList();
-    return;
-  }
-
-  const root = getNode(
-    campaign,
-    campaign.rootNodeId
-  );
-
-  campaignView.innerHTML = `
-    <section class="view-header">
-
-      <button
-        class="back-button"
-        id="backToCampaigns"
-      >
-        ← CAMPANHAS
-      </button>
-
-      <div class="node-heading">
-
+  if (!campaigns.length) {
+    campaignView.innerHTML = `
+      <section class="empty-state">
         <p class="eyebrow">
-          UNIVERSO
+          PALANTIR
         </p>
 
         <h2>
-          ${escapeHtml(campaign.name)}
+          Nenhuma campanha encontrada.
         </h2>
 
         <p class="muted">
-          ${escapeHtml(
-            campaign.description || ""
-          )}
+          O arquivo de dados ainda está vazio.
         </p>
+      </section>
+    `;
 
-      </div>
-    </section>
+    return;
+  }
 
-    <section class="node-panel">
+  const section =
+    document.createElement(
+      "section"
+    );
 
-      <div class="node-panel-header">
+  section.className =
+    "campaign-list";
 
-        <div>
+  const title =
+    document.createElement(
+      "div"
+    );
 
-          <span class="node-type">
-            RAIZ DA CAMPANHA
-          </span>
+  title.className =
+    "section-heading";
 
-          <h3>
-            ${escapeHtml(
-              root ? root.name : campaign.name
-            )}
-          </h3>
+  title.innerHTML = `
+    <p class="eyebrow">
+      CAMPANHAS
+    </p>
 
-        </div>
-
-      </div>
-
-      <div class="tree-section">
-
-        <p class="section-label">
-          ESTRUTURA
-        </p>
-
-        <div
-          id="tree"
-          class="tree"
-        ></div>
-
-      </div>
-
-    </section>
+    <h2>
+      Arquivos disponíveis
+    </h2>
   `;
 
+  section.appendChild(
+    title
+  );
+
+  campaigns.forEach(
+    (campaign) => {
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.className =
+        "campaign-card";
+
+      button.innerHTML = `
+        <span class="campaign-card-type">
+          CAMPANHA
+        </span>
+
+        <span class="campaign-card-name">
+          ${escapeHtml(
+            campaign.name
+          )}
+        </span>
+      `;
+
+      button.addEventListener(
+        "click",
+        () => {
+          renderCampaign(
+            campaign
+          );
+        }
+      );
+
+      section.appendChild(
+        button
+      );
+    }
+  );
+
+  campaignView.appendChild(
+    section
+  );
+}
+
+
+/* =========================================================
+   RENDERIZAR CAMPANHA
+   ========================================================= */
+
+function renderCampaign(
+  campaign
+) {
+  campaignView.innerHTML = "";
+
+  const wrapper =
+    document.createElement(
+      "section"
+    );
+
+  wrapper.className =
+    "campaign-view";
+
+  const header =
+    document.createElement(
+      "div"
+    );
+
+  header.className =
+    "campaign-header";
+
+  header.innerHTML = `
+    <div>
+      <p class="eyebrow">
+        CAMPANHA
+      </p>
+
+      <h2>
+        ${escapeHtml(
+          campaign.name
+        )}
+      </h2>
+    </div>
+
+    <button
+      class="back-button"
+      id="backToCampaigns"
+    >
+      ← CAMPANHAS
+    </button>
+  `;
+
+  wrapper.appendChild(
+    header
+  );
+
+  const layout =
+    document.createElement(
+      "div"
+    );
+
+  layout.className =
+    "campaign-layout";
+
+  const tree =
+    document.createElement(
+      "aside"
+    );
+
+  tree.className =
+    "tree-panel";
+
+  const treeTitle =
+    document.createElement(
+      "div"
+    );
+
+  treeTitle.className =
+    "tree-title";
+
+  treeTitle.innerHTML = `
+    <p class="eyebrow">
+      ESTRUTURA
+    </p>
+
+    <span>
+      Árvore da campanha
+    </span>
+  `;
+
+  tree.appendChild(
+    treeTitle
+  );
+
+  const treeContent =
+    document.createElement(
+      "div"
+    );
+
+  treeContent.id =
+    "campaignTree";
+
+  tree.appendChild(
+    treeContent
+  );
+
+  const detail =
+    document.createElement(
+      "section"
+    );
+
+  detail.className =
+    "node-detail";
+
+  detail.id =
+    "nodeDetail";
+
+  detail.innerHTML = `
+    <div class="empty-node">
+      <p class="eyebrow">
+        PALANTIR
+      </p>
+
+      <h3>
+        Selecione um Node
+      </h3>
+
+      <p class="muted">
+        Navegue pela árvore para abrir
+        uma entidade da campanha.
+      </p>
+    </div>
+  `;
+
+  layout.appendChild(
+    tree
+  );
+
+  layout.appendChild(
+    detail
+  );
+
+  wrapper.appendChild(
+    layout
+  );
+
+  campaignView.appendChild(
+    wrapper
+  );
+
   document
-    .getElementById("backToCampaigns")
+    .getElementById(
+      "backToCampaigns"
+    )
     .addEventListener(
       "click",
       renderCampaignList
     );
 
-  if (root) {
-    renderTree(
-      campaign,
-      root,
-      document.getElementById("tree"),
-      0
-    );
-  }
+  renderTree(
+    campaign,
+    treeContent
+  );
 }
 
 
@@ -281,117 +424,89 @@ function renderCampaign(campaignId) {
 
 function renderTree(
   campaign,
-  node,
-  container,
-  depth
+  container
 ) {
-  const children = getNodeChildren(
-    campaign,
-    node
+  container.innerHTML = "";
+
+  const root =
+    campaign.nodes.find(
+      (node) =>
+        !node.parentId
+    );
+
+  if (!root) {
+    container.innerHTML = `
+      <p class="muted">
+        Nenhum Node raiz encontrado.
+      </p>
+    `;
+
+    return;
+  }
+
+  const tree =
+    document.createElement(
+      "ul"
+    );
+
+  tree.className =
+    "tree-root";
+
+  tree.appendChild(
+    renderTreeNode(
+      campaign,
+      root
+    )
   );
 
-  const item =
-    document.createElement("div");
-
-  item.className = "tree-item";
-
-  item.style.setProperty(
-    "--depth",
-    depth
+  container.appendChild(
+    tree
   );
+}
 
-  const row =
-    document.createElement("div");
 
-  row.className = "tree-row";
+/* =========================================================
+   NODE DA ÁRVORE
+   ========================================================= */
 
-  const expandButton =
-    document.createElement("button");
+function renderTreeNode(
+  campaign,
+  node
+) {
+  const li =
+    document.createElement(
+      "li"
+    );
 
-  expandButton.className =
-    "tree-toggle";
-
-  expandButton.textContent =
-    children.length ? "▸" : "•";
-
-  expandButton.setAttribute(
-    "aria-label",
-    children.length
-      ? "Expandir"
-      : "Node"
-  );
-
-  const nodeButton =
-    document.createElement("button");
-
-  nodeButton.className =
+  li.className =
     "tree-node";
 
-  nodeButton.innerHTML = `
-    <span class="tree-icon">
-      ${getNodeIcon(node.type)}
+  const button =
+    document.createElement(
+      "button"
+    );
+
+  button.className =
+    "tree-node-button";
+
+  button.dataset.nodeId =
+    node.id;
+
+  button.innerHTML = `
+    <span class="tree-node-icon">
+      ${getNodeIcon(
+        node.type
+      )}
     </span>
 
-    <span class="tree-name">
-      ${escapeHtml(node.name)}
-    </span>
-
-    <span class="tree-type">
+    <span class="tree-node-name">
       ${escapeHtml(
-        node.type || "node"
+        node.name
       )}
     </span>
   `;
 
-  row.appendChild(expandButton);
-  row.appendChild(nodeButton);
-
-  item.appendChild(row);
-
-  container.appendChild(item);
-
-  const childContainer =
-    document.createElement("div");
-
-  childContainer.className =
-    "tree-children hidden";
-
-  children.forEach((child) => {
-    renderTree(
-      campaign,
-      child,
-      childContainer,
-      depth + 1
-    );
-  });
-
-  item.appendChild(
-    childContainer
-  );
-
-  if (children.length) {
-
-    expandButton.addEventListener(
-      "click",
-      () => {
-
-        const isHidden =
-          childContainer.classList.toggle(
-            "hidden"
-          );
-
-        expandButton.textContent =
-          isHidden ? "▸" : "▾";
-      }
-    );
-
-  } else {
-
-    expandButton.disabled = true;
-
-  }
-
-  nodeButton.addEventListener(
+  button.addEventListener(
     "click",
     () => {
       openNode(
@@ -400,6 +515,52 @@ function renderTree(
       );
     }
   );
+
+  li.appendChild(
+    button
+  );
+
+  const children =
+    Array.isArray(
+      node.children
+    )
+      ? node.children
+      : [];
+
+  if (children.length) {
+    const ul =
+      document.createElement(
+        "ul"
+      );
+
+    ul.className =
+      "tree-children";
+
+    children.forEach(
+      (childId) => {
+        const child =
+          getNode(
+            campaign,
+            childId
+          );
+
+        if (child) {
+          ul.appendChild(
+            renderTreeNode(
+              campaign,
+              child
+            )
+          );
+        }
+      }
+    );
+
+    li.appendChild(
+      ul
+    );
+  }
+
+  return li;
 }
 
 
@@ -411,199 +572,265 @@ function openNode(
   campaign,
   node
 ) {
-  const children =
-    getNodeChildren(
+  const detail =
+    document.getElementById(
+      "nodeDetail"
+    );
+
+  if (!detail) {
+    return;
+  }
+
+  const breadcrumb =
+    renderBreadcrumb(
       campaign,
       node
     );
+
+  const children =
+    Array.isArray(
+      node.children
+    )
+      ? node.children
+      : [];
 
   const relations =
-    getNodeRelations(
-      campaign,
-      node
-    );
+    Array.isArray(
+      node.relations
+    )
+      ? node.relations
+      : [];
 
-  campaignView.innerHTML = `
-    <section class="view-header">
+  detail.innerHTML = `
+    ${breadcrumb}
 
-      ${renderBreadcrumb(
-        campaign,
-        node
-      )}
+    <article class="node-card">
 
-      <button
-        class="back-button"
-        id="backToTree"
-      >
-        ← ${escapeHtml(
-          campaign.name
-        )}
-      </button>
+      <div class="node-card-header">
 
-      <div class="node-heading">
+        <div>
+          <p class="eyebrow">
+            ${escapeHtml(
+              node.type || "NODE"
+            )}
+          </p>
 
-        <p class="eyebrow">
-          ${escapeHtml(
-            node.type || "NODE"
-          )}
-        </p>
+          <h2>
+            ${escapeHtml(
+              node.name
+            )}
+          </h2>
+        </div>
 
-        <h2>
-          ${escapeHtml(
-            node.name
-          )}
-        </h2>
+        <div class="node-actions">
 
-      </div>
+          <button
+            class="edit-node-button"
+            id="editNode"
+          >
+            ✎ EDITAR NODE
+          </button>
 
-    </section>
+          <button
+            class="create-node-button"
+            id="createNode"
+          >
+            ＋ CRIAR NODE
+          </button>
 
-    <section class="node-detail">
-
-      <div class="node-actions">
-
-        <button
-          class="edit-node-button"
-          id="editNode"
-        >
-          ✎ EDITAR NODE
-        </button>
-
-        <button
-          class="create-node-button"
-          id="createNode"
-        >
-          ＋ CRIAR NODE
-        </button>
+        </div>
 
       </div>
 
-      <div class="detail-content">
-
-        <p class="section-label">
-          CONTEÚDO
-        </p>
-
-        <p class="node-content">
-          ${escapeHtml(
-            node.content ||
-            "Este Node ainda não possui conteúdo."
-          )}
-        </p>
-
+      <div class="node-content">
+        ${
+          node.content
+            ? escapeHtml(
+                node.content
+              ).replace(
+                /\n/g,
+                "<br>"
+              )
+            : `
+              <span class="muted">
+                Este Node ainda não possui conteúdo.
+              </span>
+            `
+        }
       </div>
 
       ${
         children.length
           ? `
-        <div class="detail-section">
+            <section class="node-section">
 
-          <p class="section-label">
-            CONTÉM
-          </p>
+              <p class="eyebrow">
+                FILHOS
+              </p>
 
-          <div class="link-list">
+              <div class="node-links">
+                ${children
+                  .map(
+                    (childId) => {
+                      const child =
+                        getNode(
+                          campaign,
+                          childId
+                        );
 
-            ${children.map((child) => `
-              <button
-                class="link-card"
-                data-node-id="${child.id}"
-              >
+                      if (!child) {
+                        return "";
+                      }
 
-                <span>
-                  ${getNodeIcon(
-                    child.type
-                  )}
-                </span>
+                      return `
+                        <button
+                          class="node-link"
+                          data-node-id="${child.id}"
+                        >
+                          ${escapeHtml(
+                            child.name
+                          )}
+                        </button>
+                      `;
+                    }
+                  )
+                  .join("")}
+              </div>
 
-                <span>
-
-                  <strong>
-                    ${escapeHtml(
-                      child.name
-                    )}
-                  </strong>
-
-                  <small>
-                    ${escapeHtml(
-                      child.type ||
-                      "node"
-                    )}
-                  </small>
-
-                </span>
-
-              </button>
-            `).join("")}
-
-          </div>
-
-        </div>
-      `
+            </section>
+          `
           : ""
       }
 
       ${
         relations.length
           ? `
-        <div class="detail-section">
+            <section class="node-section">
 
-          <p class="section-label">
-            RELAÇÕES
-          </p>
+              <p class="eyebrow">
+                RELAÇÕES
+              </p>
 
-          <div class="link-list">
+              <div class="relation-list">
 
-            ${relations.map(
-              (relation) => `
-              <button
-                class="link-card relation-card"
-                data-node-id="${relation.node.id}"
-              >
+                ${relations
+                  .map(
+                    (relation) => {
 
-                <span>
-                  ↗
-                </span>
+                      const target =
+                        getNode(
+                          campaign,
+                          relation.targetId
+                        );
 
-                <span>
+                      if (!target) {
+                        return "";
+                      }
 
-                  <strong>
-                    ${escapeHtml(
-                      relation.node.name
-                    )}
-                  </strong>
+                      return `
+                        <div class="relation-item">
 
-                  <small>
-                    ${escapeHtml(
-                      relation.type ||
-                      "relacionado-a"
-                    )}
-                  </small>
+                          <span class="relation-type">
+                            ${escapeHtml(
+                              relation.type ||
+                              "relacionado-a"
+                            )}
+                          </span>
 
-                </span>
+                          <button
+                            class="node-link relation-link"
+                            data-node-id="${target.id}"
+                          >
+                            ${escapeHtml(
+                              target.name
+                            )}
+                          </button>
 
-              </button>
-            `
-            ).join("")}
+                        </div>
+                      `;
+                    }
+                  )
+                  .join("")}
 
-          </div>
+              </div>
 
-        </div>
-      `
+            </section>
+          `
           : ""
       }
 
-    </section>
+    </article>
   `;
 
+  detail
+    .querySelectorAll(
+      ".breadcrumb-item"
+    )
+    .forEach(
+      (button) => {
 
-  /* =======================================================
-     BOTÃO EDITAR
-     ======================================================= */
+        button.addEventListener(
+          "click",
+          () => {
 
-  document
-    .getElementById("editNode")
-    .addEventListener(
+            const target =
+              getNode(
+                campaign,
+                button.dataset
+                  .nodeId
+              );
+
+            if (target) {
+              openNode(
+                campaign,
+                target
+              );
+            }
+
+          }
+        );
+
+      }
+    );
+
+  detail
+    .querySelectorAll(
+      ".node-link"
+    )
+    .forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            const target =
+              getNode(
+                campaign,
+                button.dataset
+                  .nodeId
+              );
+
+            if (target) {
+              openNode(
+                campaign,
+                target
+              );
+            }
+
+          }
+        );
+
+      }
+    );
+
+  const editButton =
+    document.getElementById(
+      "editNode"
+    );
+
+  if (editButton) {
+    editButton.addEventListener(
       "click",
       () => {
         openNodeEditor(
@@ -612,15 +839,15 @@ function openNode(
         );
       }
     );
+  }
 
+  const createButton =
+    document.getElementById(
+      "createNode"
+    );
 
-  /* =======================================================
-     BOTÃO CRIAR
-     ======================================================= */
-
-  document
-    .getElementById("createNode")
-    .addEventListener(
+  if (createButton) {
+    createButton.addEventListener(
       "click",
       () => {
         openCreateNodeEditor(
@@ -629,105 +856,28 @@ function openNode(
         );
       }
     );
-
-
-  /* =======================================================
-     BREADCRUMB
-     ======================================================= */
-
-  document
-    .querySelectorAll(
-      "[data-breadcrumb-id]"
-    )
-    .forEach((button) => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          const target =
-            getNode(
-              campaign,
-              button.dataset
-                .breadcrumbId
-            );
-
-          if (target) {
-            openNode(
-              campaign,
-              target
-            );
-          }
-
-        }
-      );
-
-    });
-
-
-  /* =======================================================
-     VOLTAR PARA ÁRVORE
-     ======================================================= */
-
-  document
-    .getElementById(
-      "backToTree"
-    )
-    .addEventListener(
-      "click",
-      () => {
-        renderCampaign(
-          campaign.id
-        );
-      }
-    );
-
-
-  /* =======================================================
-     LINKS INTERNOS E RELAÇÕES
-     ======================================================= */
-
-  document
-    .querySelectorAll(
-      "[data-node-id]"
-    )
-    .forEach((button) => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          const target =
-            getNode(
-              campaign,
-              button.dataset
-                .nodeId
-            );
-
-          if (target) {
-            openNode(
-              campaign,
-              target
-            );
-          }
-
-        }
-      );
-
-    });
+  }
 }
 
 
 /* =========================================================
-   EDITOR DE NODE EXISTENTE
+   EDITAR NODE
    ========================================================= */
 
 function openNodeEditor(
   campaign,
   node
 ) {
+  const overlay =
+    document.createElement(
+      "div"
+    );
+
+  overlay.className =
+    "modal-overlay";
+
   const isRoot =
-    node.id === campaign.rootNodeId;
+    !node.parentId;
 
   const possibleParents =
     getPossibleParents(
@@ -735,93 +885,89 @@ function openNodeEditor(
       node
     );
 
-  const overlay =
-    document.createElement("div");
-
-  overlay.className =
-    "node-editor-overlay";
-
   overlay.innerHTML = `
-    <div class="node-editor">
+    <div class="modal-panel">
 
-      <div class="node-editor-header">
+      <div class="modal-header">
 
         <div>
           <p class="eyebrow">
-            EDITOR DE NODE
+            EDITAR NODE
           </p>
 
           <h2>
-            ${escapeHtml(node.name)}
+            ${escapeHtml(
+              node.name
+            )}
           </h2>
         </div>
 
         <button
-          class="node-editor-close"
-          id="closeNodeEditor"
+          class="modal-close"
+          id="cancelEditNode"
         >
           ×
         </button>
 
       </div>
 
-      <div class="node-editor-body">
+      <div class="editor-field">
 
-        <label>
-          <span>NOME</span>
-
-          <input
-            id="editNodeName"
-            type="text"
-            value="${escapeHtml(node.name)}"
-          >
+        <label for="editNodeName">
+          Nome
         </label>
 
-        <label>
-          <span>TIPO</span>
+        <input
+          id="editNodeName"
+          type="text"
+          value="${escapeHtml(
+            node.name
+          )}"
+        >
 
-          <input
-            id="editNodeType"
-            type="text"
-            value="${escapeHtml(
-              node.type || "node"
-            )}"
-          >
+      </div>
+
+      <div class="editor-field">
+
+        <label for="editNodeType">
+          Tipo
         </label>
 
-        <label>
-          <span>CONTEÚDO</span>
+        <input
+          id="editNodeType"
+          type="text"
+          value="${escapeHtml(
+            node.type || ""
+          )}"
+        >
 
-          <textarea
-            id="editNodeContent"
-            rows="8"
-          >${escapeHtml(
-            node.content || ""
-          )}</textarea>
+      </div>
+
+      <div class="editor-field">
+
+        <label for="editNodeParent">
+          Localização
         </label>
 
-        <label>
-          <span>LOCALIZAÇÃO NA ÁRVORE</span>
-
-          <select
-            id="editNodeParent"
-            ${isRoot ? "disabled" : ""}
-          >
-
-            ${
-              isRoot
-                ? `
-                  <option>
-                    RAIZ DA CAMPANHA
-                  </option>
-                `
-                : possibleParents
-                    .map(
-                      (parent) => `
+        ${
+          isRoot
+            ? `
+              <div class="editor-static">
+                NODE RAIZ
+              </div>
+            `
+            : `
+              <select
+                id="editNodeParent"
+              >
+                ${possibleParents
+                  .map(
+                    (parent) => `
                       <option
                         value="${parent.id}"
                         ${
-                          node.parentId === parent.id
+                          parent.id ===
+                          node.parentId
                             ? "selected"
                             : ""
                         }
@@ -834,38 +980,41 @@ function openNodeEditor(
                         )}
                       </option>
                     `
-                    )
-                    .join("")
-            }
-
-          </select>
-
-          ${
-            isRoot
-              ? `
-                <small>
-                  A raiz da campanha não pode ser movida.
-                </small>
-              `
-              : ""
-          }
-
-        </label>
+                  )
+                  .join("")}
+              </select>
+            `
+        }
 
       </div>
 
-      <div class="node-editor-actions">
+      <div class="editor-field">
+
+        <label for="editNodeContent">
+          Conteúdo
+        </label>
+
+        <textarea
+          id="editNodeContent"
+          rows="12"
+        >${escapeHtml(
+          node.content || ""
+        )}</textarea>
+
+      </div>
+
+      <div class="modal-actions">
 
         <button
-          class="node-editor-cancel"
-          id="cancelNodeEditor"
+          class="secondary-button"
+          id="cancelEditNodeBottom"
         >
           CANCELAR
         </button>
 
         <button
-          class="node-editor-save"
-          id="saveNodeEditor"
+          class="primary-button"
+          id="saveEditNode"
         >
           SALVAR ALTERAÇÕES
         </button>
@@ -879,34 +1028,34 @@ function openNodeEditor(
     overlay
   );
 
+  const cancelButtons =
+    [
+      document.getElementById(
+        "cancelEditNode"
+      ),
+      document.getElementById(
+        "cancelEditNodeBottom"
+      )
+    ];
 
-  document
-    .getElementById(
-      "closeNodeEditor"
-    )
-    .addEventListener(
-      "click",
-      () => {
-        overlay.remove();
+  cancelButtons.forEach(
+    (button) => {
+
+      if (button) {
+        button.addEventListener(
+          "click",
+          () => {
+            overlay.remove();
+          }
+        );
       }
-    );
 
-
-  document
-    .getElementById(
-      "cancelNodeEditor"
-    )
-    .addEventListener(
-      "click",
-      () => {
-        overlay.remove();
-      }
-    );
-
+    }
+  );
 
   document
     .getElementById(
-      "saveNodeEditor"
+      "saveEditNode"
     )
     .addEventListener(
       "click",
@@ -974,6 +1123,8 @@ function openNodeEditor(
           );
         }
 
+        saveData();
+
         overlay.remove();
 
         openNode(
@@ -982,7 +1133,6 @@ function openNodeEditor(
         );
       }
     );
-
 
   overlay.addEventListener(
     "click",
@@ -997,10 +1147,113 @@ function openNodeEditor(
     }
   );
 }
+/* =========================================================
+   POSSÍVEIS PAIS
+   ========================================================= */
+
+function getPossibleParents(
+  campaign,
+  node
+) {
+  const descendants =
+    new Set();
+
+  function collectDescendants(
+    currentNode
+  ) {
+    const children =
+      Array.isArray(
+        currentNode.children
+      )
+        ? currentNode.children
+        : [];
+
+    children.forEach(
+      (childId) => {
+
+        if (
+          descendants.has(
+            childId
+          )
+        ) {
+          return;
+        }
+
+        descendants.add(
+          childId
+        );
+
+        const child =
+          getNode(
+            campaign,
+            childId
+          );
+
+        if (child) {
+          collectDescendants(
+            child
+          );
+        }
+
+      }
+    );
+  }
+
+  collectDescendants(
+    node
+  );
+
+  return campaign.nodes
+    .filter(
+      (candidate) =>
+        candidate.id !== node.id &&
+        !descendants.has(
+          candidate.id
+        )
+    )
+    .sort(
+      (a, b) =>
+        getNodeLocationLabel(
+          campaign,
+          a
+        ).localeCompare(
+          getNodeLocationLabel(
+            campaign,
+            b
+          ),
+          "pt-BR"
+        )
+    );
+}
 
 
 /* =========================================================
-   NOVO NODE
+   LOCALIZAÇÃO DO NODE
+   ========================================================= */
+
+function getNodeLocationLabel(
+  campaign,
+  node
+) {
+  const path =
+    getNodePath(
+      campaign,
+      node
+    );
+
+  return path
+    .map(
+      (item) =>
+        item.name
+    )
+    .join(
+      " › "
+    );
+}
+
+
+/* =========================================================
+   CRIAR NODE
    ========================================================= */
 
 function openCreateNodeEditor(
@@ -1008,10 +1261,12 @@ function openCreateNodeEditor(
   currentParent
 ) {
   const overlay =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   overlay.className =
-    "node-editor-overlay";
+    "modal-overlay";
 
   const possibleParents =
     getAllNodesSorted(
@@ -1019,66 +1274,75 @@ function openCreateNodeEditor(
     );
 
   overlay.innerHTML = `
-    <div class="node-editor">
+    <div class="modal-panel">
 
-      <div class="node-editor-header">
+      <div class="modal-header">
 
         <div>
           <p class="eyebrow">
-            NOVO NODE
+            CRIAR NODE
           </p>
 
           <h2>
-            Criar entidade
+            Novo Node
           </h2>
         </div>
 
         <button
-          class="node-editor-close"
-          id="closeCreateNodeEditor"
+          class="modal-close"
+          id="cancelCreateNode"
         >
           ×
         </button>
 
       </div>
 
-      <div class="node-editor-body">
+      <div class="editor-field">
 
-        <label>
-          <span>NOME</span>
-
-          <input
-            id="createNodeName"
-            type="text"
-            placeholder="Nome do novo Node"
-            autofocus
-          >
+        <label for="createNodeName">
+          Nome
         </label>
 
-        <label>
-          <span>TIPO</span>
+        <input
+          id="createNodeName"
+          type="text"
+          placeholder="Nome do Node"
+        >
 
-          <input
-            id="createNodeType"
-            type="text"
-            placeholder="Ex.: personagem, evento, local..."
-          >
+      </div>
+
+      <div class="editor-field">
+
+        <label for="createNodeType">
+          Tipo
         </label>
 
-        <label>
-          <span>LOCALIZAÇÃO NA ÁRVORE</span>
+        <input
+          id="createNodeType"
+          type="text"
+          placeholder="node"
+        >
 
-          <select
-            id="createNodeParent"
-          >
+      </div>
 
-            ${possibleParents
-              .map(
-                (parent) => `
+      <div class="editor-field">
+
+        <label for="createNodeParent">
+          Localização
+        </label>
+
+        <select
+          id="createNodeParent"
+        >
+
+          ${possibleParents
+            .map(
+              (parent) => `
                 <option
                   value="${parent.id}"
                   ${
-                    parent.id === currentParent.id
+                    parent.id ===
+                    currentParent.id
                       ? "selected"
                       : ""
                   }
@@ -1091,36 +1355,39 @@ function openCreateNodeEditor(
                   )}
                 </option>
               `
-              )
-              .join("")}
+            )
+            .join("")}
 
-          </select>
-        </label>
-
-        <label>
-          <span>CONTEÚDO</span>
-
-          <textarea
-            id="createNodeContent"
-            rows="8"
-            placeholder="Escreva o conteúdo deste Node..."
-          ></textarea>
-        </label>
+        </select>
 
       </div>
 
-      <div class="node-editor-actions">
+      <div class="editor-field">
+
+        <label for="createNodeContent">
+          Conteúdo
+        </label>
+
+        <textarea
+          id="createNodeContent"
+          rows="12"
+          placeholder="Conteúdo do Node..."
+        ></textarea>
+
+      </div>
+
+      <div class="modal-actions">
 
         <button
-          class="node-editor-cancel"
-          id="cancelCreateNode"
+          class="secondary-button"
+          id="cancelCreateNodeBottom"
         >
           CANCELAR
         </button>
 
         <button
-          class="node-editor-save"
-          id="confirmCreateNode"
+          class="primary-button"
+          id="saveCreateNode"
         >
           CRIAR NODE
         </button>
@@ -1134,34 +1401,34 @@ function openCreateNodeEditor(
     overlay
   );
 
+  const cancelButtons =
+    [
+      document.getElementById(
+        "cancelCreateNode"
+      ),
+      document.getElementById(
+        "cancelCreateNodeBottom"
+      )
+    ];
 
-  document
-    .getElementById(
-      "closeCreateNodeEditor"
-    )
-    .addEventListener(
-      "click",
-      () => {
-        overlay.remove();
+  cancelButtons.forEach(
+    (button) => {
+
+      if (button) {
+        button.addEventListener(
+          "click",
+          () => {
+            overlay.remove();
+          }
+        );
       }
-    );
 
-
-  document
-    .getElementById(
-      "cancelCreateNode"
-    )
-    .addEventListener(
-      "click",
-      () => {
-        overlay.remove();
-      }
-    );
-
+    }
+  );
 
   document
     .getElementById(
-      "confirmCreateNode"
+      "saveCreateNode"
     )
     .addEventListener(
       "click",
@@ -1212,31 +1479,26 @@ function openCreateNodeEditor(
 
         if (!parent) {
           alert(
-            "Localização do Node inválida."
+            "O Node pai não foi encontrado."
           );
           return;
         }
 
-
-        /* ===============================================
-           CRIA O ID
-           =============================================== */
-
-        const id =
-          generateNodeId();
-
-
-        /* ===============================================
-           CRIA A ENTIDADE
-           =============================================== */
-
         const newNode = {
-          id,
+          id:
+            generateNodeId(),
+
           name,
-          type: type || "node",
+
+          type:
+            type || "node",
+
           content,
+
           parentId,
+
           children: [],
+
           relations: []
         };
 
@@ -1246,35 +1508,40 @@ function openCreateNodeEditor(
            =============================================== */
 
         campaign.nodes.push(
-  newNode
-);
+          newNode
+        );
 
-/* ===============================================
-   ADICIONA AO PAI
-   =============================================== */
 
-if (!Array.isArray(
-  parent.children
-)) {
-  parent.children = [];
-}
+        /* ===============================================
+           ADICIONA AO PAI
+           =============================================== */
 
-parent.children.push(
-  newNode.id
-);
+        if (!Array.isArray(
+          parent.children
+        )) {
+          parent.children = [];
+        }
 
-saveData();
+        parent.children.push(
+          newNode.id
+        );
 
-/* ===============================================
-   FECHA E ABRE O NODE
-   =============================================== */
+        saveData();
 
-overlay.remove();
 
-openNode(
-  campaign,
-  newNode
-);
+        /* ===============================================
+           FECHA E ABRE O NODE
+           =============================================== */
+
+        overlay.remove();
+
+        openNode(
+          campaign,
+          newNode
+        );
+      }
+    );
+
 
   overlay.addEventListener(
     "click",
@@ -1302,7 +1569,7 @@ function generateNodeId() {
     "-" +
     Math.random()
       .toString(36)
-      .slice(2, 9)
+      .slice(2, 8)
   );
 }
 
@@ -1327,93 +1594,6 @@ function getAllNodesSorted(
         "pt-BR"
       )
     );
-}
-
-
-/* =========================================================
-   LOCALIZAÇÃO COMPLETA
-   ========================================================= */
-
-function getNodeLocationLabel(
-  campaign,
-  node
-) {
-  const path =
-    getNodePath(
-      campaign,
-      node
-    );
-
-  return path
-    .map(
-      (item) => item.name
-    )
-    .join(" › ");
-}
-
-
-/* =========================================================
-   DESCENDENTES
-   ========================================================= */
-
-function getDescendantIds(
-  campaign,
-  node
-) {
-  const descendants = [];
-
-  function collect(current) {
-
-    const children =
-      getNodeChildren(
-        campaign,
-        current
-      );
-
-    children.forEach(
-      (child) => {
-
-        descendants.push(
-          child.id
-        );
-
-        collect(child);
-
-      }
-    );
-  }
-
-  collect(node);
-
-  return descendants;
-}
-
-
-/* =========================================================
-   POSSÍVEIS PAIS PARA EDIÇÃO
-   ========================================================= */
-
-function getPossibleParents(
-  campaign,
-  node
-) {
-  const excludedIds =
-    new Set([
-      node.id,
-      ...getDescendantIds(
-        campaign,
-        node
-      )
-    ]);
-
-  return getAllNodesSorted(
-    campaign
-  ).filter(
-    (possibleParent) =>
-      !excludedIds.has(
-        possibleParent.id
-      )
-  );
 }
 
 
@@ -1488,63 +1668,63 @@ function moveNode(
    ÍCONES
    ========================================================= */
 
-function getNodeIcon(type) {
-
+function getNodeIcon(
+  type
+) {
   const icons = {
-
-    "campaign-root": "◉",
-
-    folder: "▱",
-
-    faction: "◇",
-
-    "character-sheet": "◈",
-
+    campaign: "◈",
+    faction: "◆",
+    player: "●",
+    npc: "○",
+    leadership: "▲",
+    sheet: "▣",
     biography: "▤",
-
-    event: "◆",
-
-    threat: "☠"
-
+    event: "◉",
+    threat: "☠",
+    location: "⌖",
+    mission: "⚑",
+    item: "◇",
+    weapon: "╋",
+    creature: "♢",
+    rule: "≡",
+    node: "•"
   };
 
   return (
     icons[type] ||
-    "•"
+    icons.node
   );
 }
 
 
 /* =========================================================
-   SEGURANÇA DE HTML
+   ESCAPAR HTML
    ========================================================= */
 
-function escapeHtml(value) {
-
-  return String(value)
-
-    .replaceAll(
-      "&",
+function escapeHtml(
+  value
+) {
+  return String(
+    value ?? ""
+  )
+    .replace(
+      /&/g,
       "&amp;"
     )
-
-    .replaceAll(
-      "<",
+    .replace(
+      /</g,
       "&lt;"
     )
-
-    .replaceAll(
-      ">",
+    .replace(
+      />/g,
       "&gt;"
     )
-
-    .replaceAll(
-      '"',
+    .replace(
+      /"/g,
       "&quot;"
     )
-
-    .replaceAll(
-      "'",
+    .replace(
+      /'/g,
       "&#039;"
     );
 }
