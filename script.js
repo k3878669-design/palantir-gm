@@ -3,11 +3,6 @@ const campaignView = document.getElementById("campaignView");
 
 const data = window.PALANTIR_DATA;
 
-const app = document.querySelector(".app");
-const campaignView = document.getElementById("campaignView");
-
-const data = window.PALANTIR_DATA;
-
 const STORAGE_KEY = "palantir-gm-data";
 
 function saveData() {
