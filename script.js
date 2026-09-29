@@ -8,7 +8,9 @@ if (!data || !Array.isArray(data.campaigns)) {
     <section class="error-panel">
       <p class="eyebrow">ERRO DE ARQUIVO</p>
       <h2>Dados do Palantir não encontrados.</h2>
-      <p class="muted">Verifique se o data.js está carregando corretamente.</p>
+      <p class="muted">
+        Verifique se o data.js está carregando corretamente.
+      </p>
     </section>
   `;
 } else {
@@ -42,38 +44,123 @@ function getNodeRelations(campaign, node) {
     .filter((relation) => relation.node);
 }
 
+/*
+  Retorna o caminho hierárquico do Node.
+
+  Exemplo:
+
+  The Red Veil
+  → Facções
+  → BSAA
+  → Players
+  → Fichas
+  → O Fantasma
+*/
+function getNodePath(campaign, node) {
+  const path = [];
+  let current = node;
+
+  while (current) {
+    path.unshift(current);
+
+    if (!current.parentId) {
+      break;
+    }
+
+    current = getNode(campaign, current.parentId);
+  }
+
+  return path;
+}
+
+/*
+  Cria o breadcrumb visual do Node.
+
+  Importante:
+  o breadcrumb representa a localização na ÁRVORE,
+  não o caminho usado para chegar até o Node.
+*/
+function renderBreadcrumb(campaign, node) {
+  const path = getNodePath(campaign, node);
+
+  return `
+    <nav
+      class="breadcrumb"
+      aria-label="Localização"
+    >
+      ${path.map((item, index) => `
+        <button
+          class="breadcrumb-item"
+          data-breadcrumb-id="${item.id}"
+        >
+          ${escapeHtml(item.name)}
+        </button>
+
+        ${
+          index < path.length - 1
+            ? `<span class="breadcrumb-separator">›</span>`
+            : ""
+        }
+      `).join("")}
+    </nav>
+  `;
+}
+
 function renderCampaignList() {
   campaignView.innerHTML = `
     <section class="welcome">
       <p class="eyebrow">SISTEMA ONLINE</p>
       <h2>Campanhas</h2>
-      <p class="muted">Selecione um universo para entrar no Palantir.</p>
+
+      <p class="muted">
+        Selecione um universo para entrar no Palantir.
+      </p>
     </section>
 
     <section class="campaign-grid">
       ${getCampaigns().map((campaign) => `
-        <button class="campaign-card" data-campaign-id="${campaign.id}">
+        <button
+          class="campaign-card"
+          data-campaign-id="${campaign.id}"
+        >
           <span class="icon">◉</span>
-          <span class="card-title">${escapeHtml(campaign.name)}</span>
-          <span class="card-subtitle">${escapeHtml(campaign.description || "Campanha")}</span>
+
+          <span class="card-title">
+            ${escapeHtml(campaign.name)}
+          </span>
+
+          <span class="card-subtitle">
+            ${escapeHtml(
+              campaign.description || "Campanha"
+            )}
+          </span>
         </button>
       `).join("")}
     </section>
 
-    <button class="new-campaign" id="newCampaign">
+    <button
+      class="new-campaign"
+      id="newCampaign"
+    >
       + NOVA CAMPANHA
     </button>
   `;
 
-  document.querySelectorAll("[data-campaign-id]").forEach((button) => {
-    button.addEventListener("click", () => {
-      renderCampaign(button.dataset.campaignId);
+  document
+    .querySelectorAll("[data-campaign-id]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        renderCampaign(button.dataset.campaignId);
+      });
     });
-  });
 
-  document.getElementById("newCampaign").addEventListener("click", () => {
-    alert("Criador de campanhas: EM CONSTRUÇÃO.");
-  });
+  document
+    .getElementById("newCampaign")
+    .addEventListener("click", () => {
+      alert(
+        "Criador de campanhas: EM CONSTRUÇÃO."
+      );
+    });
 }
 
 function renderCampaign(campaignId) {
@@ -84,41 +171,82 @@ function renderCampaign(campaignId) {
     return;
   }
 
-  const root = getNode(campaign, campaign.rootNodeId);
+  const root = getNode(
+    campaign,
+    campaign.rootNodeId
+  );
 
   campaignView.innerHTML = `
     <section class="view-header">
-      <button class="back-button" id="backToCampaigns">
+
+      <button
+        class="back-button"
+        id="backToCampaigns"
+      >
         ← CAMPANHAS
       </button>
 
       <div class="node-heading">
-        <p class="eyebrow">UNIVERSO</p>
-        <h2>${escapeHtml(campaign.name)}</h2>
-        <p class="muted">
-          ${escapeHtml(campaign.description || "")}
+
+        <p class="eyebrow">
+          UNIVERSO
         </p>
+
+        <h2>
+          ${escapeHtml(campaign.name)}
+        </h2>
+
+        <p class="muted">
+          ${escapeHtml(
+            campaign.description || ""
+          )}
+        </p>
+
       </div>
     </section>
 
     <section class="node-panel">
+
       <div class="node-panel-header">
+
         <div>
-          <span class="node-type">RAIZ DA CAMPANHA</span>
-          <h3>${escapeHtml(root ? root.name : campaign.name)}</h3>
+
+          <span class="node-type">
+            RAIZ DA CAMPANHA
+          </span>
+
+          <h3>
+            ${escapeHtml(
+              root ? root.name : campaign.name
+            )}
+          </h3>
+
         </div>
+
       </div>
 
       <div class="tree-section">
-        <p class="section-label">ESTRUTURA</p>
-        <div id="tree" class="tree"></div>
+
+        <p class="section-label">
+          ESTRUTURA
+        </p>
+
+        <div
+          id="tree"
+          class="tree"
+        ></div>
+
       </div>
+
     </section>
   `;
 
   document
     .getElementById("backToCampaigns")
-    .addEventListener("click", renderCampaignList);
+    .addEventListener(
+      "click",
+      renderCampaignList
+    );
 
   if (root) {
     renderTree(
@@ -130,26 +258,53 @@ function renderCampaign(campaignId) {
   }
 }
 
-function renderTree(campaign, node, container, depth) {
-  const children = getNodeChildren(campaign, node);
-
-  const item = document.createElement("div");
-  item.className = "tree-item";
-  item.style.setProperty("--depth", depth);
-
-  const row = document.createElement("div");
-  row.className = "tree-row";
-
-  const expandButton = document.createElement("button");
-  expandButton.className = "tree-toggle";
-  expandButton.textContent = children.length ? "▸" : "•";
-  expandButton.setAttribute(
-    "aria-label",
-    children.length ? "Expandir" : "Node"
+function renderTree(
+  campaign,
+  node,
+  container,
+  depth
+) {
+  const children = getNodeChildren(
+    campaign,
+    node
   );
 
-  const nodeButton = document.createElement("button");
-  nodeButton.className = "tree-node";
+  const item =
+    document.createElement("div");
+
+  item.className = "tree-item";
+
+  item.style.setProperty(
+    "--depth",
+    depth
+  );
+
+  const row =
+    document.createElement("div");
+
+  row.className = "tree-row";
+
+  const expandButton =
+    document.createElement("button");
+
+  expandButton.className =
+    "tree-toggle";
+
+  expandButton.textContent =
+    children.length ? "▸" : "•";
+
+  expandButton.setAttribute(
+    "aria-label",
+    children.length
+      ? "Expandir"
+      : "Node"
+  );
+
+  const nodeButton =
+    document.createElement("button");
+
+  nodeButton.className =
+    "tree-node";
 
   nodeButton.innerHTML = `
     <span class="tree-icon">
@@ -161,17 +316,24 @@ function renderTree(campaign, node, container, depth) {
     </span>
 
     <span class="tree-type">
-      ${escapeHtml(node.type || "node")}
+      ${escapeHtml(
+        node.type || "node"
+      )}
     </span>
   `;
 
   row.appendChild(expandButton);
   row.appendChild(nodeButton);
+
   item.appendChild(row);
+
   container.appendChild(item);
 
-  const childContainer = document.createElement("div");
-  childContainer.className = "tree-children hidden";
+  const childContainer =
+    document.createElement("div");
+
+  childContainer.className =
+    "tree-children hidden";
 
   children.forEach((child) => {
     renderTree(
@@ -182,50 +344,101 @@ function renderTree(campaign, node, container, depth) {
     );
   });
 
-  item.appendChild(childContainer);
+  item.appendChild(
+    childContainer
+  );
 
   if (children.length) {
-    expandButton.addEventListener("click", () => {
-      const isHidden =
-        childContainer.classList.toggle("hidden");
 
-      expandButton.textContent =
-        isHidden ? "▸" : "▾";
-    });
+    expandButton.addEventListener(
+      "click",
+      () => {
+
+        const isHidden =
+          childContainer.classList.toggle(
+            "hidden"
+          );
+
+        expandButton.textContent =
+          isHidden ? "▸" : "▾";
+      }
+    );
+
   } else {
+
     expandButton.disabled = true;
+
   }
 
-  nodeButton.addEventListener("click", () => {
-    openNode(campaign, node);
-  });
+  nodeButton.addEventListener(
+    "click",
+    () => {
+      openNode(
+        campaign,
+        node
+      );
+    }
+  );
 }
 
-function openNode(campaign, node) {
-  const children = getNodeChildren(campaign, node);
-  const relations = getNodeRelations(campaign, node);
+function openNode(
+  campaign,
+  node
+) {
+  const children =
+    getNodeChildren(
+      campaign,
+      node
+    );
+
+  const relations =
+    getNodeRelations(
+      campaign,
+      node
+    );
 
   campaignView.innerHTML = `
     <section class="view-header">
-      <button class="back-button" id="backToTree">
-        ← ${escapeHtml(campaign.name)}
+
+      ${renderBreadcrumb(
+        campaign,
+        node
+      )}
+
+      <button
+        class="back-button"
+        id="backToTree"
+      >
+        ← ${escapeHtml(
+          campaign.name
+        )}
       </button>
 
       <div class="node-heading">
+
         <p class="eyebrow">
-          ${escapeHtml(node.type || "NODE")}
+          ${escapeHtml(
+            node.type || "NODE"
+          )}
         </p>
 
         <h2>
-          ${escapeHtml(node.name)}
+          ${escapeHtml(
+            node.name
+          )}
         </h2>
+
       </div>
+
     </section>
 
     <section class="node-detail">
 
       <div class="detail-content">
-        <p class="section-label">CONTEÚDO</p>
+
+        <p class="section-label">
+          CONTEÚDO
+        </p>
 
         <p class="node-content">
           ${escapeHtml(
@@ -233,36 +446,54 @@ function openNode(campaign, node) {
             "Este Node ainda não possui conteúdo."
           )}
         </p>
+
       </div>
 
       ${
         children.length
           ? `
         <div class="detail-section">
-          <p class="section-label">CONTÉM</p>
+
+          <p class="section-label">
+            CONTÉM
+          </p>
 
           <div class="link-list">
+
             ${children.map((child) => `
               <button
                 class="link-card"
                 data-node-id="${child.id}"
               >
+
                 <span>
-                  ${getNodeIcon(child.type)}
+                  ${getNodeIcon(
+                    child.type
+                  )}
                 </span>
 
                 <span>
+
                   <strong>
-                    ${escapeHtml(child.name)}
+                    ${escapeHtml(
+                      child.name
+                    )}
                   </strong>
 
                   <small>
-                    ${escapeHtml(child.type || "node")}
+                    ${escapeHtml(
+                      child.type ||
+                      "node"
+                    )}
                   </small>
+
                 </span>
+
               </button>
             `).join("")}
+
           </div>
+
         </div>
       `
           : ""
@@ -272,30 +503,47 @@ function openNode(campaign, node) {
         relations.length
           ? `
         <div class="detail-section">
-          <p class="section-label">RELAÇÕES</p>
+
+          <p class="section-label">
+            RELAÇÕES
+          </p>
 
           <div class="link-list">
-            ${relations.map((relation) => `
+
+            ${relations.map(
+              (relation) => `
               <button
                 class="link-card relation-card"
                 data-node-id="${relation.node.id}"
               >
-                <span>↗</span>
 
                 <span>
+                  ↗
+                </span>
+
+                <span>
+
                   <strong>
-                    ${escapeHtml(relation.node.name)}
+                    ${escapeHtml(
+                      relation.node.name
+                    )}
                   </strong>
 
                   <small>
                     ${escapeHtml(
-                      relation.type || "relacionado-a"
+                      relation.type ||
+                      "relacionado-a"
                     )}
                   </small>
+
                 </span>
+
               </button>
-            `).join("")}
+            `
+            ).join("")}
+
           </div>
+
         </div>
       `
           : ""
@@ -304,47 +552,141 @@ function openNode(campaign, node) {
     </section>
   `;
 
+  /*
+    Breadcrumb
+  */
+
   document
-    .getElementById("backToTree")
-    .addEventListener("click", () => {
-      renderCampaign(campaign.id);
+    .querySelectorAll(
+      "[data-breadcrumb-id]"
+    )
+    .forEach((button) => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const target =
+            getNode(
+              campaign,
+              button.dataset
+                .breadcrumbId
+            );
+
+          if (target) {
+            openNode(
+              campaign,
+              target
+            );
+          }
+
+        }
+      );
+
     });
 
-  document
-    .querySelectorAll("[data-node-id]")
-    .forEach((button) => {
-      button.addEventListener("click", () => {
-        const target = getNode(
-          campaign,
-          button.dataset.nodeId
-        );
+  /*
+    Voltar para a árvore
+  */
 
-        if (target) {
-          openNode(campaign, target);
+  document
+    .getElementById(
+      "backToTree"
+    )
+    .addEventListener(
+      "click",
+      () => {
+        renderCampaign(
+          campaign.id
+        );
+      }
+    );
+
+  /*
+    Links internos e relações
+  */
+
+  document
+    .querySelectorAll(
+      "[data-node-id]"
+    )
+    .forEach((button) => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const target =
+            getNode(
+              campaign,
+              button.dataset
+                .nodeId
+            );
+
+          if (target) {
+            openNode(
+              campaign,
+              target
+            );
+          }
+
         }
-      });
+      );
+
     });
 }
 
 function getNodeIcon(type) {
+
   const icons = {
+
     "campaign-root": "◉",
+
     folder: "▱",
+
     faction: "◇",
+
     "character-sheet": "◈",
+
     biography: "▤",
+
     event: "◆",
+
     threat: "☠"
+
   };
 
-  return icons[type] || "•";
+  return (
+    icons[type] || "•"
+  );
 }
 
 function escapeHtml(value) {
+
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 }
