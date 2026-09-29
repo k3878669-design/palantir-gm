@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PALANTIR GM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <span class="classification">ARQUIVO DO MESTRE</span>
+        <h1>PALANTIR</h1>
+      </div>
+      <span class="version">GM // 0.1</span>
+    </header>
+
+    <section class="welcome">
+      <p class="eyebrow">SISTEMA ONLINE</p>
+      <h2>Campanhas</h2>
+      <p class="muted">Seu caos organizado começa aqui.</p>
+    </section>
+
+    <section id="campaigns" class="campaign-grid">
+      <button class="campaign-card" data-campaign="BSAA — HEXATOMBE">
+        <span class="icon">◉</span>
+        <span class="card-title">BSAA — HEXATOMBE</span>
+        <span class="card-subtitle">Operação / Paranormal</span>
+      </button>
+
+      <button class="campaign-card" data-campaign="ORDEM — MUTILADOR">
+        <span class="icon">◈</span>
+        <span class="card-title">ORDEM — MUTILADOR</span>
+        <span class="card-subtitle">Investigação / Horror</span>
+      </button>
+    </section>
+
+    <button id="newCampaign" class="new-campaign">+ NOVA CAMPANHA</button>
+
+    <footer>
+      PALANTIR // propriedade do Mestre
+    </footer>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <p class="eyebrow">CAMPANHA SELECIONADA</p>
+      <h2 id="selectedCampaign">---</h2>
+      <p class="muted">Primeiro módulo do Palantir carregado com sucesso.</p>
+      <button id="closeModal" class="close-button">ENTENDI</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
