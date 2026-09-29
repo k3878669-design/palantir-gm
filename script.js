@@ -1251,38 +1251,35 @@ function openCreateNodeEditor(
            =============================================== */
 
         campaign.nodes.push(
-          newNode
-        );
+  newNode
+);
 
+/* ===============================================
+   ADICIONA AO PAI
+   =============================================== */
 
-        /* ===============================================
-           ADICIONA AO PAI
-           =============================================== */
+if (!Array.isArray(
+  parent.children
+)) {
+  parent.children = [];
+}
 
-        if (!Array.isArray(
-          parent.children
-        )) {
-          parent.children = [];
-        }
+parent.children.push(
+  newNode.id
+);
 
-        parent.children.push(
-          newNode.id
-        );
+saveData();
 
+/* ===============================================
+   FECHA E ABRE O NODE
+   =============================================== */
 
-        /* ===============================================
-           FECHA E ABRE O NODE
-           =============================================== */
+overlay.remove();
 
-        overlay.remove();
-
-        openNode(
-          campaign,
-          newNode
-        );
-      }
-    );
-
+openNode(
+  campaign,
+  newNode
+);
 
   overlay.addEventListener(
     "click",
