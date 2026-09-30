@@ -2462,3 +2462,65 @@ footer {
   border-color: var(--accent);
   background: var(--panel-hover);
 }
+
+/* ================================
+   PALANTIR 0.2.7.3
+   RESULTADOS DA BUSCA
+   ================================ */
+
+.topbar-search {
+  position: relative;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 24px;
+  right: 24px;
+  z-index: 500;
+  display: none;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+}
+
+.search-result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.search-result:last-child {
+  border-bottom: 0;
+}
+
+.search-result:hover {
+  background: var(--panel-hover);
+}
+
+.search-result-name {
+  font-weight: 600;
+}
+
+.search-result-type {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.search-empty {
+  padding: 14px;
+  color: var(--muted);
+}
