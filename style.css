@@ -2430,3 +2430,35 @@ footer {
   background: var(--accent);
   color: #fff;
   }
+
+/* ================================
+   PALANTIR 0.2.7.1
+   CAMPO DE BUSCA
+   ================================ */
+
+.topbar-search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+.search-input {
+  width: min(420px, 100%);
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--panel-hover);
+}
