@@ -3,6 +3,45 @@ const campaignView = document.getElementById("campaignView");
 
 const data = window.PALANTIR_DATA;
 
+// ================================
+// PALANTIR 0.2.7.2
+// MOTOR DE BUSCA
+// ================================
+
+function searchNodes(query) {
+  const normalizedQuery = query
+    .trim()
+    .toLowerCase();
+
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  const results = [];
+
+  data.campaigns.forEach((campaign) => {
+    campaign.nodes.forEach((node) => {
+      const searchableText = [
+        node.name,
+        node.type,
+        node.content
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      if (searchableText.includes(normalizedQuery)) {
+        results.push({
+          campaign,
+          node
+        });
+      }
+    });
+  });
+
+  return results;
+}
+
 const STORAGE_KEY = "palantir-gm-data";
 
 function saveData() {
