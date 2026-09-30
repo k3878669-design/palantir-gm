@@ -50,10 +50,7 @@ if (searchInput) {
 
     window.PALANTIR_SEARCH_RESULTS = results;
 
-    console.log(
-      "Resultados da busca:",
-      results
-    );
+    renderSearchResults(results, event.target.value);
   });
 }
 
