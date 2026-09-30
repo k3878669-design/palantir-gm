@@ -810,26 +810,43 @@ function openNode(
       "deleteNode"
     );
 
+  const deleteButton =
+  document.getElementById(
+    "deleteNode"
+  );
+
   if (deleteButton) {
-    deleteButton.addEventListener(
-      "click",
-      () => {
-        const confirmed =
-          confirm(
-            `Deseja realmente excluir o Node "${node.name}"?`
-          );
+  deleteButton.addEventListener(
+    "click",
+    () => {
 
-        if (!confirmed) {
-          return;
-        }
-
-        removeNode(
-          campaign,
-          node
+      if (
+        node.deletionPolicy ===
+        "protected"
+      ) {
+        alert(
+          "Este Node faz parte da estrutura protegida do Palantir e não pode ser excluído."
         );
+
+        return;
       }
-    );
-  }
+
+      const confirmed =
+        confirm(
+          `Deseja realmente excluir o Node "${node.name}"?`
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      removeNode(
+        campaign,
+        node
+      );
+    }
+  );
+}
 
   document
     .querySelectorAll(
