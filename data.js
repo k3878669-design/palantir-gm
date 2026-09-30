@@ -71,6 +71,7 @@ const PALANTIR_DATA = {
           id: "node-bsaa-players",
           name: "Players",
           type: "folder",
+          deletionPolicy: "protected",
           parentId: "node-bsaa",
 
           content:
