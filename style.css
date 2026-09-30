@@ -2157,3 +2157,276 @@ footer {
   white-space:
     nowrap;
 }
+
+/* COMPATIBILIDADE 0.2.6.1 */
+
+/* ================================
+   PALANTIR 0.2.6.1
+   COMPATIBILIDADE DA INTERFACE
+   ================================ */
+
+.campaign-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.tree-panel {
+  min-width: 0;
+  overflow: auto;
+}
+
+.tree-branch {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tree-node {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.tree-node:hover {
+  background: var(--panel-hover);
+}
+
+.tree-node.active {
+  background: var(--accent-soft);
+}
+
+.tree-node-icon {
+  width: 18px;
+  flex: 0 0 18px;
+  color: var(--accent);
+  text-align: center;
+}
+
+.tree-node-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.node-title-area {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.node-detail-icon {
+  color: var(--accent);
+  font-size: 22px;
+}
+
+.node-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edit-node-button,
+.create-node-button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.edit-node-button:hover,
+.create-node-button:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
+
+.content-section {
+  margin-top: 24px;
+}
+
+.node-text {
+  color: var(--text);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.relations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.relation-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.relation-card:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
+
+.relation-type {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.relation-name {
+  color: var(--text);
+}
+
+.empty-relations,
+.empty-node {
+  color: var(--muted);
+}
+
+/* ================================
+   MODAL DO EDITOR
+   ================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.node-editor-modal {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.editor-field label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.editor-field input,
+.editor-field textarea,
+.editor-field select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #08090c;
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.editor-field textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.editor-field input:focus,
+.editor-field textarea:focus,
+.editor-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.modal-cancel,
+.modal-save {
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.modal-cancel {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+}
+
+.modal-save {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  }
