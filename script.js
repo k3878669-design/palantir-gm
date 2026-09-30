@@ -1606,6 +1606,16 @@ function removeNode(
   campaign,
   node
 ) {
+    if (
+    node.deletionPolicy ===
+    "protected"
+  ) {
+    alert(
+      "Este Node faz parte da estrutura protegida do Palantir e não pode ser excluído."
+    );
+
+    return;
+  }
   if (
     node.id ===
     campaign.rootNodeId
