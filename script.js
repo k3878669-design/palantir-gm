@@ -155,6 +155,23 @@ function getNode(campaign, nodeId) {
   );
 }
 
+function getNodeDependencies(
+  campaign,
+  node
+) {
+  return campaign.nodes.filter(
+    (currentNode) =>
+      Array.isArray(
+        currentNode.relations
+      ) &&
+      currentNode.relations.some(
+        (relation) =>
+          relation.targetId ===
+          node.id
+      )
+  );
+}
+
 
 /* =========================================================
    CAMINHO DO NODE
