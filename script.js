@@ -70,9 +70,17 @@ function loadData() {
   try {
     const parsedData = JSON.parse(savedData);
 
-    if (parsedData && Array.isArray(parsedData.campaigns)) {
-      data.campaigns = parsedData.campaigns;
-    }
+if (parsedData && Array.isArray(parsedData.campaigns)) {
+  data.campaigns = parsedData.campaigns;
+
+  data.campaigns.forEach((campaign) => {
+    campaign.nodes.forEach((node) => {
+      if (!node.deletionPolicy) {
+        node.deletionPolicy = "confirm";
+      }
+    });
+  }
+}
   } catch (error) {
     console.error("Erro ao carregar memória do Palantir:", error);
   }
