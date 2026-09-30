@@ -806,11 +806,6 @@ function openNode(
   }
 
   const deleteButton =
-    document.getElementById(
-      "deleteNode"
-    );
-
-  const deleteButton =
   document.getElementById(
     "deleteNode"
   );
