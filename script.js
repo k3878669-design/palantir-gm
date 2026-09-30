@@ -42,6 +42,21 @@ function searchNodes(query) {
   return results;
 }
 
+const searchInput = document.getElementById("searchInput");
+
+if (searchInput) {
+  searchInput.addEventListener("input", (event) => {
+    const results = searchNodes(event.target.value);
+
+    window.PALANTIR_SEARCH_RESULTS = results;
+
+    console.log(
+      "Resultados da busca:",
+      results
+    );
+  });
+}
+
 const STORAGE_KEY = "palantir-gm-data";
 
 function saveData() {
