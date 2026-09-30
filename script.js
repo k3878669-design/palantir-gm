@@ -17,15 +17,6 @@ function searchNodes(query) {
     return [];
   }
 
-  function searchNodes(query) {
-  const normalizedQuery = query
-    .trim()
-    .toLowerCase();
-
-  if (!normalizedQuery) {
-    return [];
-  }
-
   const results = [];
 
   data.campaigns.forEach((campaign) => {
@@ -50,7 +41,6 @@ function searchNodes(query) {
 
   return results;
 }
-
   const results = [];
 
   data.campaigns.forEach((campaign) => {
