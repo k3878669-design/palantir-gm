@@ -2524,3 +2524,18 @@ footer {
   padding: 14px;
   color: var(--muted);
 }
+
+.delete-node-button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.delete-node-button:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+}
