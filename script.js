@@ -17,6 +17,66 @@ function searchNodes(query) {
     return [];
   }
 
+  function renderSearchResults(results, query) {
+  let resultsContainer = document.getElementById(
+    "searchResults"
+  );
+
+  if (!resultsContainer) {
+    resultsContainer = document.createElement("div");
+
+    resultsContainer.id = "searchResults";
+    resultsContainer.className = "search-results";
+
+    const searchBox = document.querySelector(
+      ".topbar-search"
+    );
+
+    if (searchBox) {
+      searchBox.appendChild(resultsContainer);
+    }
+  }
+
+  if (!query.trim()) {
+    resultsContainer.innerHTML = "";
+    resultsContainer.style.display = "none";
+    return;
+  }
+
+  if (results.length === 0) {
+    resultsContainer.innerHTML = `
+      <div class="search-empty">
+        Nenhum Node encontrado.
+      </div>
+    `;
+
+    resultsContainer.style.display = "block";
+    return;
+  }
+
+  resultsContainer.innerHTML = results
+    .map(({ campaign, node }) => {
+      return `
+        <button
+          class="search-result"
+          data-campaign-id="${escapeHtml(campaign.id)}"
+          data-node-id="${escapeHtml(node.id)}"
+        >
+          <span class="search-result-name">
+            ${escapeHtml(node.name)}
+          </span>
+
+          <span class="search-result-type">
+            ${escapeHtml(node.type || "node")}
+          </span>
+        </button>
+      `;
+    })
+    .join("");
+
+  resultsContainer.style.display = "block";
+}
+
   const results = [];
 
   data.campaigns.forEach((campaign) => {
