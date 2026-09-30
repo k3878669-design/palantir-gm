@@ -18,6 +18,8 @@ function searchNodes(query) {
   }
 
   function renderSearchResults(results, query) {
+    console.log("RENDERIZANDO BUSCA:", query, results);
+    
   let resultsContainer = document.getElementById(
     "searchResults"
   );
