@@ -71,16 +71,54 @@ function loadData() {
     const parsedData = JSON.parse(savedData);
 
 if (parsedData && Array.isArray(parsedData.campaigns)) {
-  data.campaigns = parsedData.campaigns;
+  const currentCampaigns = data.campaigns;
 
-  data.campaigns.forEach((campaign) => {
-    campaign.nodes.forEach((node) => {
-      if (!node.deletionPolicy) {
-        node.deletionPolicy = "confirm";
+  parsedData.campaigns.forEach((savedCampaign) => {
+    const currentCampaign =
+      currentCampaigns.find(
+        (campaign) =>
+          campaign.id === savedCampaign.id
+      );
+
+    if (!currentCampaign) {
+      return;
+    }
+
+    savedCampaign.nodes.forEach((savedNode) => {
+      const currentNode =
+        currentCampaign.nodes.find(
+          (node) =>
+            node.id === savedNode.id
+        );
+
+      if (!currentNode) {
+        return;
+      }
+
+      Object.assign(
+        currentNode,
+        savedNode
+      );
+
+      if (
+        currentNode.deletionPolicy ===
+        undefined
+      ) {
+        currentNode.deletionPolicy =
+          "confirm";
+      }
+
+      if (
+        currentNode.id ===
+        "node-bsaa-players"
+      ) {
+        currentNode.deletionPolicy =
+          "protected";
       }
     });
-  }
+  });
 }
+    
   } catch (error) {
     console.error("Erro ao carregar memória do Palantir:", error);
   }
