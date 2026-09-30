@@ -843,19 +843,41 @@ function openNode(
         return;
       }
 
-      const confirmed =
-        confirm(
-          `Deseja realmente excluir o Node "${node.name}"?`
-        );
+      const dependencies =
+  getNodeDependencies(
+    campaign,
+    node
+  );
 
-      if (!confirmed) {
-        return;
-      }
+if (dependencies.length > 0) {
+  const dependencyNames =
+    dependencies
+      .map(
+        (dependency) =>
+          `• ${dependency.name}`
+      )
+      .join("\n");
 
-      removeNode(
-        campaign,
-        node
-      );
+  alert(
+    `Este Node possui dependências:\n\n${dependencyNames}\n\nA exclusão será bloqueada por enquanto.`
+  );
+
+  return;
+}
+
+const confirmed =
+  confirm(
+    `Deseja realmente excluir o Node "${node.name}"?`
+  );
+
+if (!confirmed) {
+  return;
+}
+
+removeNode(
+  campaign,
+  node
+);
     }
   );
 }
