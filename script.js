@@ -759,6 +759,32 @@ function openNode(
     );
   }
 
+  const deleteButton =
+    document.getElementById(
+      "deleteNode"
+    );
+
+  if (deleteButton) {
+    deleteButton.addEventListener(
+      "click",
+      () => {
+        const confirmed =
+          confirm(
+            `Deseja realmente excluir o Node "${node.name}"?`
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
+        console.log(
+          "EXCLUSÃO CONFIRMADA:",
+          node.name
+        );
+      }
+    );
+  }
+
   document
     .querySelectorAll(
       ".tree-node"
