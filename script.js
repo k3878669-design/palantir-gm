@@ -1602,6 +1602,73 @@ function moveNode(
   saveData();
 }
 
+function removeNode(
+  campaign,
+  node
+) {
+  if (
+    node.id ===
+    campaign.rootNodeId
+  ) {
+    alert(
+      "O Node raiz não pode ser excluído."
+    );
+
+    return;
+  }
+
+  const parent =
+    node.parentId
+      ? getNode(
+          campaign,
+          node.parentId
+        )
+      : null;
+
+  if (parent) {
+    if (
+      !Array.isArray(
+        parent.children
+      )
+    ) {
+      parent.children =
+        [];
+    }
+
+    parent.children =
+      parent.children.filter(
+        (childId) =>
+          childId !==
+          node.id
+      );
+  }
+
+  campaign.nodes =
+    campaign.nodes.filter(
+      (currentNode) =>
+        currentNode.id !==
+        node.id
+    );
+
+  saveData();
+
+  if (parent) {
+    openNode(
+      campaign,
+      parent
+    );
+
+    renderTree(
+      campaign,
+      campaign.nodes.find(
+        (currentNode) =>
+          currentNode.id ===
+          campaign.rootNodeId
+      )
+    );
+  }
+}
+
 
 /* =========================================================
    ÍCONES
