@@ -616,9 +616,12 @@ function openNode(
             ✎ EDITAR NODE
           </button>
 
-          <button class="delete-node-button" id="deleteNode">
-  🗑 EXCLUIR NODE
-</button>
+          <button
+            class="delete-node-button"
+            id="deleteNode"
+          >
+            🗑 EXCLUIR NODE
+           </button>
 
         </div>
 
