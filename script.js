@@ -777,9 +777,9 @@ function openNode(
           return;
         }
 
-        console.log(
-          "EXCLUSÃO CONFIRMADA:",
-          node.name
+        removeNode(
+          campaign,
+          node
         );
       }
     );
