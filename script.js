@@ -41,31 +41,7 @@ function searchNodes(query) {
 
   return results;
 }
-  const results = [];
-
-  data.campaigns.forEach((campaign) => {
-    campaign.nodes.forEach((node) => {
-      const searchableText = [
-        node.name,
-        node.type,
-        node.content
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      if (searchableText.includes(normalizedQuery)) {
-        results.push({
-          campaign,
-          node
-        });
-      }
-    });
-  });
-
-  return results;
-}
-
+ 
 const searchInput = document.getElementById("searchInput");
 
 if (searchInput) {
