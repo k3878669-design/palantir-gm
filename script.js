@@ -1696,4 +1696,34 @@ function renderSearchResults(results, query) {
     .join("");
 
   resultsContainer.style.display = "block";
+  const searchResultButtons = resultsContainer.querySelectorAll(
+  ".search-result"
+);
+
+searchResultButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const campaignId = button.dataset.campaignId;
+    const nodeId = button.dataset.nodeId;
+
+    const campaign = data.campaigns.find(
+      (item) => item.id === campaignId
+    );
+
+    if (!campaign) {
+      return;
+    }
+
+    const node = campaign.nodes.find(
+      (item) => item.id === nodeId
+    );
+
+    if (!node) {
+      return;
+    }
+
+    openNode(campaign, node);
+
+    resultsContainer.style.display = "none";
+  });
+});
 }
