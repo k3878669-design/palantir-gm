@@ -961,6 +961,63 @@ function openNode(
       }
     );
 
+  document
+  .querySelectorAll(
+    ".remove-relation-button"
+  )
+  .forEach(
+    (button) => {
+      button.addEventListener(
+        "click",
+        () => {
+
+          const relationIndex =
+            Number(
+              button.dataset
+                .relationIndex
+            );
+
+          if (
+            Number.isNaN(
+              relationIndex
+            )
+          ) {
+            return;
+          }
+
+          if (
+            !Array.isArray(
+              node.relations
+            )
+          ) {
+            return;
+          }
+
+          const confirmed =
+            confirm(
+              `Deseja remover esta relação de "${node.name}"?`
+            );
+
+          if (!confirmed) {
+            return;
+          }
+
+          node.relations.splice(
+            relationIndex,
+            1
+          );
+
+          saveData();
+
+          openNode(
+            campaign,
+            node
+          );
+        }
+      );
+    }
+  );
+
   const editButton =
     document.getElementById(
       "editNode"
