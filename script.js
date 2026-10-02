@@ -2031,7 +2031,9 @@ function openRelationEditor(
           targetId:
             targetNode.id,
           type:
-            relationType
+            relationType,
+          dependency:
+            relationDependency
         });
 
         saveData();
