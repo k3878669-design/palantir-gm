@@ -758,7 +758,9 @@ function openNode(
                 return "";
               }
 
-              return `
+            return `
+              <div class="relation-item">
+
                 <button
                   class="relation-card"
                   data-node-id="${target.id}"
@@ -775,8 +777,17 @@ function openNode(
                       target.name
                     )}
                   </span>
-                </button>
-              `;
+                  </button>
+
+                  <button
+                    class="remove-relation-button"
+                    data-relation-index="${index}"
+                  >
+                    🗑️
+                 </button>
+
+               </div>
+             `;
             }
           )
           .join("")
