@@ -649,6 +649,74 @@ function renderCampaign(
       }
     );
 
+  const treeModeButton =
+  document.getElementById(
+    "treeModeButton"
+  );
+
+const teiaModeButton =
+  document.getElementById(
+    "teiaModeButton"
+  );
+
+const treeViewPanel =
+  document.getElementById(
+    "treeViewPanel"
+  );
+
+const teiaViewPanel =
+  document.getElementById(
+    "teiaViewPanel"
+  );
+
+if (
+  treeModeButton &&
+  teiaModeButton &&
+  treeViewPanel &&
+  teiaViewPanel
+) {
+
+  treeModeButton.addEventListener(
+    "click",
+    () => {
+
+      treeViewPanel.hidden =
+        false;
+
+      teiaViewPanel.hidden =
+        true;
+
+      treeModeButton.classList.add(
+        "active"
+      );
+
+      teiaModeButton.classList.remove(
+        "active"
+      );
+    }
+  );
+
+  teiaModeButton.addEventListener(
+    "click",
+    () => {
+
+      treeViewPanel.hidden =
+        true;
+
+      teiaViewPanel.hidden =
+        false;
+
+      teiaModeButton.classList.add(
+        "active"
+      );
+
+      treeModeButton.classList.remove(
+        "active"
+      );
+    }
+  );
+}
+
   renderTree(
     campaign,
     root
