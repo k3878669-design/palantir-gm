@@ -2049,6 +2049,23 @@ function removeNode(
       );
   }
 
+  const deletedNodeIds =
+  getDeletedNodeIds();
+
+  if (
+  !deletedNodeIds.includes(
+    node.id
+  )
+) {
+  deletedNodeIds.push(
+    node.id
+  );
+}
+
+saveDeletedNodeIds(
+  deletedNodeIds
+);
+
   campaign.nodes =
     campaign.nodes.filter(
       (currentNode) =>
