@@ -686,6 +686,10 @@ if (
       teiaViewPanel.hidden =
         true;
 
+      renderTeia(
+        campaign
+      );
+
       treeModeButton.classList.add(
         "active"
       );
