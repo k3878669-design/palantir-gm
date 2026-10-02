@@ -611,10 +611,32 @@ function renderCampaign(
 
       </div>
 
-      </div>
+    </div>
 
-    </section>
-  `;
+    <div
+      id="teiaViewPanel"
+      class="view-panel"
+      hidden
+    >
+      <div class="empty-node">
+
+        <p class="eyebrow">
+          TEIA
+        </p>
+
+        <h2>
+          A Teia do Palantir
+        </h2>
+
+        <p>
+          A rede de relações será construída aqui.
+        </p>
+
+      </div>
+    </div>
+
+  </section>
+`;
 
   document
     .getElementById(
