@@ -322,7 +322,9 @@ function getNodeDependencies(
       currentNode.relations.some(
         (relation) =>
           relation.targetId ===
-          node.id
+            node.id &&
+          relation.dependency !==
+            false
       )
   );
 }
