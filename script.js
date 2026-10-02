@@ -1981,6 +1981,14 @@ function openRelationEditor(
             .value
             .trim();
 
+        const relationDependency =
+          document
+            .getElementById(
+              "relationDependency"
+            )
+            .value ===
+            "true";
+
         if (!targetId) {
           alert(
             "Selecione um Node de destino."
