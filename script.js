@@ -576,6 +576,11 @@ function renderCampaign(
 
       </div>
 
+    <div
+      id="treeViewPanel"
+      class="view-panel"
+    >
+
       <div class="campaign-layout">
 
         <aside
@@ -603,6 +608,8 @@ function renderCampaign(
             </p>
           </div>
         </section>
+
+      </div>
 
       </div>
 
