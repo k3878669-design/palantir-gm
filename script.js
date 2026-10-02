@@ -835,6 +835,99 @@ function renderTree(
 }
 
 /* =========================================================
+   TEIA
+   ========================================================= */
+
+function renderTeia(
+  campaign
+) {
+  const teiaPanel =
+    document.getElementById(
+      "teiaViewPanel"
+    );
+
+  if (!teiaPanel) {
+    return;
+  }
+
+  const nodes =
+    campaign.nodes || [];
+
+  teiaPanel.innerHTML = `
+    <div class="teia-content">
+
+      <p class="eyebrow">
+        TEIA
+      </p>
+
+      <h2>
+        Rede do Universo
+      </h2>
+
+      <div class="teia-nodes">
+
+        ${nodes
+          .map(
+            (node) => `
+              <button
+                class="teia-node"
+                data-node-id="${node.id}"
+              >
+                <span class="teia-node-type">
+                  ${escapeHtml(
+                    node.type ||
+                      "NODE"
+                  )}
+                </span>
+
+                <span class="teia-node-name">
+                  ${escapeHtml(
+                    node.name
+                  )}
+                </span>
+              </button>
+            `
+          )
+          .join("")}
+
+      </div>
+
+    </div>
+  `;
+
+  document
+    .querySelectorAll(
+      ".teia-node"
+    )
+    .forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            const targetNode =
+              getNode(
+                campaign,
+                button.dataset
+                  .nodeId
+              );
+
+            if (targetNode) {
+              openNode(
+                campaign,
+                targetNode
+              );
+            }
+
+          }
+        );
+
+      }
+    );
+}
+
+/* =========================================================
    ABRIR NODE
    ========================================================= */
 
