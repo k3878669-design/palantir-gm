@@ -102,66 +102,180 @@ function saveDeletedNodeIds(
 }
 
 function loadData() {
-  const savedData = localStorage.getItem(STORAGE_KEY);
+  const savedData =
+    localStorage.getItem(
+      STORAGE_KEY
+    );
 
   if (!savedData) {
     return;
   }
 
   try {
-    const parsedData = JSON.parse(savedData);
+    const parsedData =
+      JSON.parse(savedData);
 
-if (parsedData && Array.isArray(parsedData.campaigns)) {
-  const currentCampaigns = data.campaigns;
-
-  parsedData.campaigns.forEach((savedCampaign) => {
-    const currentCampaign =
-      currentCampaigns.find(
-        (campaign) =>
-          campaign.id === savedCampaign.id
-      );
-
-    if (!currentCampaign) {
+    if (
+      !parsedData ||
+      !Array.isArray(
+        parsedData.campaigns
+      )
+    ) {
       return;
     }
 
-    savedCampaign.nodes.forEach((savedNode) => {
-      const currentNode =
-        currentCampaign.nodes.find(
-          (node) =>
-            node.id === savedNode.id
+    const deletedNodeIds =
+      getDeletedNodeIds();
+
+    data.campaigns.forEach(
+      (currentCampaign) => {
+
+        const savedCampaign =
+          parsedData.campaigns.find(
+            (campaign) =>
+              campaign.id ===
+              currentCampaign.id
+          );
+
+        if (
+          !savedCampaign ||
+          !Array.isArray(
+            savedCampaign.nodes
+          )
+        ) {
+          return;
+        }
+
+        const mergedNodes =
+          [];
+
+        currentCampaign.nodes.forEach(
+          (currentNode) => {
+
+            if (
+              deletedNodeIds.includes(
+                currentNode.id
+              )
+            ) {
+              return;
+            }
+
+            const savedNode =
+              savedCampaign.nodes.find(
+                (node) =>
+                  node.id ===
+                  currentNode.id
+              );
+
+            if (savedNode) {
+              Object.assign(
+                currentNode,
+                savedNode
+              );
+            }
+
+            if (
+              currentNode
+                .deletionPolicy ===
+              undefined
+            ) {
+              currentNode.deletionPolicy =
+                "confirm";
+            }
+
+            if (
+              currentNode.id ===
+              "node-bsaa-players"
+            ) {
+              currentNode.deletionPolicy =
+                "protected";
+            }
+
+            mergedNodes.push(
+              currentNode
+            );
+          }
         );
 
-      if (!currentNode) {
-        return;
-      }
+        savedCampaign.nodes.forEach(
+          (savedNode) => {
 
-      Object.assign(
-        currentNode,
-        savedNode
-      );
+            if (
+              deletedNodeIds.includes(
+                savedNode.id
+              )
+            ) {
+              return;
+            }
 
-      if (
-        currentNode.deletionPolicy ===
-        undefined
-      ) {
-        currentNode.deletionPolicy =
-          "confirm";
-      }
+            const alreadyExists =
+              mergedNodes.some(
+                (node) =>
+                  node.id ===
+                  savedNode.id
+              );
 
-      if (
-        currentNode.id ===
-        "node-bsaa-players"
-      ) {
-        currentNode.deletionPolicy =
-          "protected";
+            if (
+              alreadyExists
+            ) {
+              return;
+            }
+
+            const restoredNode = {
+              ...savedNode
+            };
+
+            if (
+              !Array.isArray(
+                restoredNode.children
+              )
+            ) {
+              restoredNode.children =
+                [];
+            }
+
+            if (
+              !Array.isArray(
+                restoredNode.relations
+              )
+            ) {
+              restoredNode.relations =
+                [];
+            }
+
+            if (
+              restoredNode
+                .deletionPolicy ===
+              undefined
+            ) {
+              restoredNode.deletionPolicy =
+                "confirm";
+            }
+
+            if (
+              restoredNode.id ===
+              "node-bsaa-players"
+            ) {
+              restoredNode.deletionPolicy =
+                "protected";
+            }
+
+            mergedNodes.push(
+              restoredNode
+            );
+          }
+        );
+
+        currentCampaign.nodes =
+          mergedNodes;
       }
-    });
-  });
-}
-    
+    );
+
   } catch (error) {
-    console.error("Erro ao carregar memória do Palantir:", error);
+    console.error(
+      "Erro ao carregar memória do Palantir:",
+      error
+    );
   }
 }
 
