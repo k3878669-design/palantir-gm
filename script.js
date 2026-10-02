@@ -1578,7 +1578,234 @@ function openRelationEditor(
   campaign,
   node
 ) {
+  const allNodes =
+    getAllNodesSorted(
+      campaign
+    ).filter(
+      (targetNode) =>
+        targetNode.id !== node.id
+    );
 
+  const overlay =
+    document.createElement(
+      "div"
+    );
+
+  overlay.className =
+    "modal-overlay";
+
+  overlay.innerHTML = `
+    <div class="node-editor-modal">
+
+      <div class="modal-header">
+
+        <div>
+          <p class="eyebrow">
+            NOVA RELAÇÃO
+          </p>
+
+          <h2>
+            Criar Relação
+          </h2>
+        </div>
+
+        <button
+          class="modal-close"
+          id="cancelCreateRelation"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div class="editor-fields">
+
+        <label>
+          <span>
+            Node de destino
+          </span>
+
+          <select
+            id="relationTarget"
+          >
+
+            <option value="">
+              Selecione um Node
+            </option>
+
+            ${allNodes
+              .map(
+                (targetNode) => `
+                  <option
+                    value="${targetNode.id}"
+                  >
+                    ${escapeHtml(
+                      targetNode.name
+                    )}
+                  </option>
+                `
+              )
+              .join("")}
+
+          </select>
+
+        </label>
+
+        <label>
+          <span>
+            Tipo da relação
+          </span>
+
+          <input
+            type="text"
+            id="relationType"
+            value="relacionado-a"
+            placeholder="Ex.: relacionado-a"
+          >
+
+        </label>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          class="modal-cancel"
+          id="cancelCreateRelationBottom"
+        >
+          CANCELAR
+        </button>
+
+        <button
+          class="modal-save"
+          id="saveRelation"
+        >
+          SALVAR RELAÇÃO
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(
+    overlay
+  );
+
+  const cancelButtons = [
+    document.getElementById(
+      "cancelCreateRelation"
+    ),
+    document.getElementById(
+      "cancelCreateRelationBottom"
+    )
+  ];
+
+  cancelButtons.forEach(
+    (button) => {
+      if (button) {
+        button.addEventListener(
+          "click",
+          () => {
+            overlay.remove();
+          }
+        );
+      }
+    }
+  );
+
+  document
+    .getElementById(
+      "saveRelation"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        const targetId =
+          document
+            .getElementById(
+              "relationTarget"
+            )
+            .value;
+
+        const relationType =
+          document
+            .getElementById(
+              "relationType"
+            )
+            .value
+            .trim();
+
+        if (!targetId) {
+          alert(
+            "Selecione um Node de destino."
+          );
+
+          return;
+        }
+
+        if (!relationType) {
+          alert(
+            "Informe o tipo da relação."
+          );
+
+          return;
+        }
+
+        const targetNode =
+          getNode(
+            campaign,
+            targetId
+          );
+
+        if (!targetNode) {
+          alert(
+            "O Node de destino não foi encontrado."
+          );
+
+          return;
+        }
+
+        if (
+          !Array.isArray(
+            node.relations
+          )
+        ) {
+          node.relations = [];
+        }
+
+        node.relations.push({
+          targetId:
+            targetNode.id,
+          type:
+            relationType
+        });
+
+        saveData();
+
+        overlay.remove();
+
+        openNode(
+          campaign,
+          node
+        );
+      }
+    );
+
+  overlay.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        overlay
+      ) {
+        overlay.remove();
+      }
+
+    }
+  );
 }
 
 
