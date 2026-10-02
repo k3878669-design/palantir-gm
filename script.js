@@ -838,8 +838,9 @@ if (createRelationButton) {
   createRelationButton.addEventListener(
     "click",
     () => {
-      alert(
-        `Criar relação a partir de "${node.name}"`
+      openRelationEditor(
+        campaign,
+        node
       );
     }
   );
