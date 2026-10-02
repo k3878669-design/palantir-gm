@@ -747,7 +747,7 @@ function openNode(
     relations.length
       ? relations
           .map(
-            (relation) => {
+            (relation, index) => {
               const target =
                 getNode(
                   campaign,
