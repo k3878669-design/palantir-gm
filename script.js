@@ -63,6 +63,44 @@ function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+function getDeletedNodeIds() {
+  const saved =
+    localStorage.getItem(
+      DELETED_STORAGE_KEY
+    );
+
+  if (!saved) {
+    return [];
+  }
+
+  try {
+    const parsed =
+      JSON.parse(saved);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+  } catch (error) {
+    console.error(
+      "Erro ao carregar Nodes excluídos:",
+      error
+    );
+
+    return [];
+  }
+}
+
+function saveDeletedNodeIds(
+  deletedNodeIds
+) {
+  localStorage.setItem(
+    DELETED_STORAGE_KEY,
+    JSON.stringify(
+      deletedNodeIds
+    )
+  );
+}
+
 function loadData() {
   const savedData = localStorage.getItem(STORAGE_KEY);
 
