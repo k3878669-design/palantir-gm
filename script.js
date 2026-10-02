@@ -1891,6 +1891,24 @@ function openRelationEditor(
 
         </label>
 
+        <label>
+          <span>
+            Gera dependência?
+          </span>
+
+          <select
+            id="relationDependency"
+          >
+            <option value="true">
+              Sim
+            </option>
+
+            <option value="false">
+              Não
+            </option>
+          </select>
+        </label>
+
       </div>
 
       <div class="modal-actions">
