@@ -2265,6 +2265,42 @@ footer {
   border-color: var(--accent);
 }
 
+.relation-item {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.relation-item .relation-card {
+  flex: 1;
+  width: auto;
+}
+
+.remove-relation-button {
+  width: 40px;
+  flex: 0 0 40px;
+
+  border: 1px solid var(--line);
+  border-radius: 8px;
+
+  background: var(--panel);
+  color: var(--muted);
+
+  cursor: pointer;
+  font: inherit;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.remove-relation-button:hover {
+  background: var(--panel-hover);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
 .content-section {
   margin-top: 24px;
 }
