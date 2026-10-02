@@ -868,7 +868,10 @@ function renderTeia(
         Rede do Universo
       </h2>
 
-      <div class="teia-nodes">
+      <div
+        class="teia-stage"
+        id="teiaStage"
+      >
 
         ${nodes
           .map(
