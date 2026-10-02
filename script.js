@@ -723,6 +723,13 @@ function openNode(
             RELAÇÕES
           </p>
 
+          <button
+            class="create-relation-button"
+            id="createRelation"
+          >
+            ＋ CRIAR RELAÇÃO
+          </button>
+
           <div class="relations-list">
             ${relationHtml}
           </div>
