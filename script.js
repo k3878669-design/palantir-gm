@@ -1574,6 +1574,13 @@ function openCreateNodeEditor(
   );
 }
 
+function openRelationEditor(
+  campaign,
+  node
+) {
+
+}
+
 
 /* =========================================================
    ORDENAR NODES
