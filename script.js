@@ -829,6 +829,22 @@ function openNode(
     );
   }
 
+  const createRelationButton =
+  document.getElementById(
+    "createRelation"
+  );
+
+if (createRelationButton) {
+  createRelationButton.addEventListener(
+    "click",
+    () => {
+      alert(
+        `Criar relação a partir de "${node.name}"`
+      );
+    }
+  );
+}
+
   const deleteButton =
   document.getElementById(
     "deleteNode"
