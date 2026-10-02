@@ -56,6 +56,9 @@ if (searchInput) {
 
 const STORAGE_KEY = "palantir-gm-data";
 
+const DELETED_STORAGE_KEY =
+  "palantir-gm-deleted-nodes";
+
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
