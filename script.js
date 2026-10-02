@@ -558,6 +558,24 @@ function renderCampaign(
 
       </div>
 
+      <div class="view-switcher">
+
+        <button
+          class="view-mode-button active"
+          id="treeModeButton"
+        >
+          🌳 ÁRVORE
+        </button>
+
+        <button
+          class="view-mode-button"
+          id="teiaModeButton"
+        >
+          🕸️ TEIA
+        </button>
+
+      </div>
+
       <div class="campaign-layout">
 
         <aside
